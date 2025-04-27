@@ -13,6 +13,6 @@ class AttendanceSeeder extends Seeder
      */
     public function run(): void
     {
-        Attendance::factory(20)->create(); // dynamic
+        Attendance::factory(20)->create();
     }
 }

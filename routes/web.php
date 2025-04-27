@@ -13,7 +13,9 @@ Route::get('/', function () {
 
 Route::get('/home', [HomeController::class, 'index'])->name('home');
 
-Route::resource('user', UserController::class);
-Route::resource('company', CompanyController::class)->except('create', 'index', 'destroy');
-Route::resource('attendance', AttendanceController::class);
-Route::resource('permission', PermissionController::class);
+Route::middleware(['auth'])->group(function () {
+    Route::resource('user', UserController::class);
+    Route::resource('company', CompanyController::class)->except('create', 'index', 'destroy');
+    Route::resource('attendance', AttendanceController::class);
+    Route::resource('permission', PermissionController::class);
+});

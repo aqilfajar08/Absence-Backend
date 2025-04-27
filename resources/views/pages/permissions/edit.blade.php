@@ -66,7 +66,11 @@
                                     <div class="form-group col-md-6 col-12">
                                         <label>Bukti Dukung</label>
                                         <div>
-                                           <img src="" alt="image surat izin">
+                                            @if ($permission->image)
+                                            <img src="{{ asset('storage/permissions/' . $permission->image) }}" alt="image surat izin">
+                                        @else
+                                            tidak ada bukti dukung 
+                                        @endif
                                         </div>
                                     </div>
                                     <div class="form-group col-md-6 col-12">
