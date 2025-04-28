@@ -12,14 +12,14 @@ class AuthController extends Controller
     public function login(Request $request) {
         $request->validate([
             'email' => 'required|email',
-            'password' => 'required|string',
+            'password' => 'required|string|min:8',
         ]);
                 
         $user = User::where('email', $request->email)->first();
 
         if(!$user) {
             return response()->json([
-                'message' => 'not found'
+                'message' => 'User not found'
             ], 404);
         }
 

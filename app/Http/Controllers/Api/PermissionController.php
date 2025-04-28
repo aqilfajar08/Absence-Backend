@@ -16,10 +16,10 @@ class PermissionController extends Controller
         ]);
 
         $permission = new Permit;
-        $permission->user = $request->user()->id;
+        $permission->user_id = $request->user()->id;
         $permission->date_permission = now()->format('Y-m-d');
         $permission->reason = $request->permission;
-        $permission->is_approved = false;
+        $permission->is_approved = 'pending'; // default value
 
         if($request->hasFile('image'))
         {
@@ -29,5 +29,6 @@ class PermissionController extends Controller
         }
 
         $permission->save();
+        return response()->json(['message' => 'Permission created successfully.'], 201);
     }
 }
