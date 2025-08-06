@@ -19,7 +19,7 @@ class AttendanceController extends Controller
         $attendance->user_id = $request->user()->id;
         $attendance->date_attendance = now()->toDateString();
         $attendance->time_in = now()->toTimeString();
-        $attendance->latlon_in = $request->latitude . ',' . $request->longitude; 
+        $attendance->latlon_in = $request->latitude . ',' . $request->longitude;
         $attendance->save();
 
         return response()->json([
