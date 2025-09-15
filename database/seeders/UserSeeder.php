@@ -17,13 +17,14 @@ class UserSeeder extends Seeder
     {
         $role = Role::create(['name' => 'admin']);
 
-        User::factory(20)->create(); // dynamic 
+        // User::factory(20)->create(); // dynamic 
     
         $adminRole = User::factory()->create([ // statistics
             'name' => 'Test User',
             'email' => 'qilz@gmail.com',
             'position' => 'CEO',
             'department' => 'IT',
+            // 'face_embedded' => null,
             'password' => Hash::make('12345678'),
         ]);
 

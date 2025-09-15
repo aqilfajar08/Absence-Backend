@@ -26,7 +26,8 @@ class User extends Authenticatable
         'position',
         'department',
         'face_embedded',
-        'image_url'
+        'image_url',
+        'fcm_token',
     ];
 
     /**
@@ -56,7 +57,7 @@ class User extends Authenticatable
         return $this->hasMany(Attendance::class);
     }
 
-    public function permissions() {
+    public function permits() {
         return $this->hasMany(Permit::class);
     }
 }

@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\Permission;
 use App\Models\Permit;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -14,6 +13,6 @@ class PermissionSeeder extends Seeder
      */
     public function run(): void
     {
-        Permit::factory(20)->create();
+        // Permit::factory(20)->create();
     }
 }

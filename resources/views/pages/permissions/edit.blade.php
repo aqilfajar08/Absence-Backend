@@ -67,7 +67,7 @@
                                         <label>Bukti Dukung</label>
                                         <div>
                                             @if ($permission->image)
-                                            <img src="{{ asset('storage/permissions/' . $permission->image) }}" alt="image surat izin">
+                                            <img src="{{ asset('storage/permissions/' . $permission->image) }}" alt="image surat izin" style="width: 200px; height: 200px; object-fit: cover; border: 1px solid #ddd; border-radius: 4px;">
                                         @else
                                             tidak ada bukti dukung 
                                         @endif

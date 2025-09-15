@@ -13,6 +13,7 @@ class PermissionController extends Controller
     {
         $request->validate([
             'permission' => 'required',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240', // 10MB max
         ]);
 
         $permission = new Permit;

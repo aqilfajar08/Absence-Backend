@@ -28,7 +28,7 @@ class UserFactory extends Factory
             'email' => fake()->unique()->safeEmail(),
             'position' => fake()->jobTitle(),
             'department' => fake()->company(),
-            'face_embedded' => fake()->text(100),
+            'face_embedded' => null,
             'image_url' => null,
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),

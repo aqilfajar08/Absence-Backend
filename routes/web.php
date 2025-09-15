@@ -19,3 +19,13 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('attendance', AttendanceController::class);
     Route::resource('permission', PermissionController::class);
 });
+
+Route::get('/storage/{path}', function ($path) {
+    $filePath = storage_path('app/public/' . $path);
+    
+    if (!file_exists($filePath)) {
+        abort(404);
+    }
+    
+    return response()->file($filePath);
+})->where('path', '.*');
