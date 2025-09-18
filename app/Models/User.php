@@ -28,6 +28,8 @@ class User extends Authenticatable
         'face_embedded',
         'image_url',
         'fcm_token',
+        'gaji_pokok',
+        'tunjangan',
     ];
 
     /**

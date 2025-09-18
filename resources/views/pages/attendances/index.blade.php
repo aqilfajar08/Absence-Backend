@@ -68,18 +68,7 @@
                                             <th>latlon out</th>
                                         </tr>
                                         @foreach ($attendances as $attendance)
-                                        <tr>
-                                            <td> {{ $attendance->user->name }}
-                                                <div class="table-links">
-                                                    <a href="#">View</a>
-                                                    <div class="bullet"></div>
-                                                    <a href="#">Edit</a>
-                                                    <div class="bullet"></div>
-                                                    {{-- <form action="{{ route('user.destroy', $user->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure want to delete this user?')">@csrf @method('DELETE')
-                                                        <button type="submit" class="btn btn-danger"><i class="fa fa-trash"></i> Delete</button>
-                                                    </form> --}}
-                                                </div>
-                                            </td>
+                                        <tr>                                            
                                             <td>
                                                 {{ $attendance->date_attendance }}
                                             </td>

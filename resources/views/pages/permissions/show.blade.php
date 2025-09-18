@@ -73,7 +73,13 @@
                                     <div class="form-group col-md-6 col-12">
                                         <label>status</label>
                                         <p>
-                                            Not Approved
+                                            @if($permission->is_approved === 1)
+                                                Approved
+                                            @elseif($permission->is_approved === 0)
+                                                Pending
+                                            @else
+                                                Rejected
+                                            @endif
                                         </p>
                                     </div>
                                 </div>

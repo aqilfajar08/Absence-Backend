@@ -87,6 +87,38 @@
                                         </div>
                                     @enderror
                                 </div>
+                                <div class="form-group">
+                                    <label>GP (Gaji Pokok)</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <div class="input-group-text">Rp</div>
+                                        </div>
+                                        <input type="number" name="gaji_pokok" value="{{ old('gaji_pokok', $user->gaji_pokok) }}" 
+                                            class="form-control @error('gaji_pokok') is-invalid @enderror" 
+                                            placeholder="0" min="0" step="1000">
+                                        @error('gaji_pokok')
+                                            <div class="invalid-feedback">
+                                                {{ $message }}
+                                            </div>
+                                        @enderror
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>TJ (Tunjangan)</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <div class="input-group-text">Rp</div>
+                                        </div>
+                                        <input type="number" name="tunjangan" value="{{ old('tunjangan', $user->tunjangan) }}" 
+                                            class="form-control @error('tunjangan') is-invalid @enderror" 
+                                            placeholder="0" min="0" step="1000">
+                                        @error('tunjangan')
+                                            <div class="invalid-feedback">
+                                                {{ $message }}
+                                            </div>
+                                        @enderror
+                                    </div>
+                                </div>
                                 
                                 <div class="form-group">
                                     <label>Password</label>
