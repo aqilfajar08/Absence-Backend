@@ -35,7 +35,10 @@ class PermissionController extends Controller
         $str = $request->is_approved == 'approved' ? 'Approved' : ($request->is_approved == 'rejected' ? 'Rejected' : 'Pending');
         
         $permission->update($request->all());
-        $this->sendNotificationToUser($permission->user_id, 'Status Izin: ' . $str);
+        
+        // Get user name for notification
+        $userName = $permission->user->name ?? 'Unknown User';
+        $this->sendNotificationToUser($permission->user_id, '(' . $userName . ') Status Izin:' . $str);
         
         // Fix the redirect - remove the ID parameter since index doesn't need it
         return redirect()->route('permission.index')->with('success', 'Permission updated successfully');

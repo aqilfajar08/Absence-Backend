@@ -73,12 +73,12 @@
                                     <div class="form-group col-md-6 col-12">
                                         <label>status</label>
                                         <p>
-                                            @if($permission->is_approved === 1)
-                                                Approved
-                                            @elseif($permission->is_approved === 0)
-                                                Pending
+                                            @if($permission->is_approved === 'approved')
+                                                <span class="badge badge-success">Approved</span>
+                                            @elseif($permission->is_approved === 'pending')
+                                                <span class="badge badge-warning">Pending</span>
                                             @else
-                                                Rejected
+                                                <span class="badge badge-danger">Rejected</span>
                                             @endif
                                         </p>
                                     </div>
