@@ -59,7 +59,7 @@ class UserController extends Controller
         $request->validate([
             'name' => 'required',
             'position' => 'nullable',
-            'department' => 'required',
+            'department' => 'nullable',
             'password' => 'required',
             'email' => 'required|email',
             'gaji_pokok' => 'nullable|numeric|min:0',
@@ -89,7 +89,7 @@ class UserController extends Controller
         $request->validate([
             'name' => 'required',
             'position' => 'nullable',
-            'department' => 'required',
+            'department' => 'nullable',
             'email' => 'required|email',
             'gaji_pokok' => 'nullable|numeric|min:0',
             'tunjangan' => 'nullable|numeric|min:0',
