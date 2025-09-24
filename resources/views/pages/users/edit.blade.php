@@ -95,7 +95,7 @@
                                         </div>
                                         <input type="number" name="gaji_pokok" value="{{ old('gaji_pokok', $user->gaji_pokok) }}" 
                                             class="form-control @error('gaji_pokok') is-invalid @enderror" 
-                                            placeholder="0" min="0" step="1000">
+                                            placeholder="0" min="0" step="any">
                                         @error('gaji_pokok')
                                             <div class="invalid-feedback">
                                                 {{ $message }}
@@ -111,7 +111,7 @@
                                         </div>
                                         <input type="number" name="tunjangan" value="{{ old('tunjangan', $user->tunjangan) }}" 
                                             class="form-control @error('tunjangan') is-invalid @enderror" 
-                                            placeholder="0" min="0" step="1000">
+                                            placeholder="0" min="0" step="any">
                                         @error('tunjangan')
                                             <div class="invalid-feedback">
                                                 {{ $message }}
