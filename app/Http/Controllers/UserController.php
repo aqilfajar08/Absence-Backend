@@ -58,7 +58,7 @@ class UserController extends Controller
 
         $request->validate([
             'name' => 'required',
-            'position' => 'required',
+            'position' => 'nullable',
             'department' => 'required',
             'password' => 'required',
             'email' => 'required|email',
@@ -88,7 +88,7 @@ class UserController extends Controller
     {
         $request->validate([
             'name' => 'required',
-            'position' => 'required',
+            'position' => 'nullable',
             'department' => 'required',
             'email' => 'required|email',
             'gaji_pokok' => 'nullable|numeric|min:0',

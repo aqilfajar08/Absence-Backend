@@ -152,23 +152,13 @@
                             <small class="form-text text-muted">Pilih bulan untuk laporan absensi</small>
                         </div>
                         
-                        <div class="alert alert-info">
-                            <h6><i class="fas fa-info-circle"></i> Informasi Laporan Bulanan:</h6>
-                            <ul class="mb-0">
-                                <li><strong>Cakupan:</strong> Laporan lengkap satu bulan dengan kolom harian</li>
-                                <li><strong>Kode Warna:</strong> 
-                                    <span style="background-color: #d4edda; padding: 2px 6px; border-radius: 3px; border: 1px solid #c3e6cb;">Hijau (Tepat Waktu 08:01-08:30)</span>, 
-                                    <span style="background-color: #fff3cd; padding: 2px 6px; border-radius: 3px; border: 1px solid #fdbf47;">Orange (Terlambat 08:31-09:00)</span>, 
-                                    <span style="background-color: #f8d7da; padding: 2px 6px; border-radius: 3px; border: 1px solid #f5c6cb;">Merah (Sangat Terlambat > 09:00)</span>
-                                </li>
-                                <li><strong>Keterangan:</strong> 
-                                    <span style="background-color: #f8d7da; padding: 2px 6px; border-radius: 3px;">T (Tidak Hadir)</span>, 
-                                    <span style="background-color: #e2e3e5; padding: 2px 6px; border-radius: 3px;">L (Libur)</span>
-                                </li>
-                                <li><strong>Data Termasuk:</strong> Jumlah izin, waktu absensi harian</li>
-                                <li><strong>Zona Waktu:</strong> Semua waktu dalam WITA (Waktu Indonesia Tengah)</li>
-                            </ul>
-                        </div>
+                        <div class="alert alert-warning">
+                            <h6><i class="fas fa-exclamation-triangle"></i> Peringatan Download:</h6>
+                            <p class="mb-0">
+                                <strong>Jika ada bertuliskan "download tidak aman diblokir" tolong lanjutkan saja dengan "Tetap Download" karena file itu aman dan tidak ada virus.</strong>
+                            </p>
+                        </div>                      
+                        
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
