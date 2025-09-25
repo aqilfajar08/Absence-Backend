@@ -50,8 +50,8 @@
                                                 <input type="tel" name="phone" class="form-control" value="{{ $company->name) }}" value="{{ $company->phon }}">
                                             </div> --}}
                                         <div class="form-group col-md-6 col-12">
-                                            <label>Radius KM</label>
-                                            <input type="number" step="0.01" name="radius_km" class="form-control" value="{{ $company->radius_km }}">
+                                            <label>Radius M</label>
+                                            <input type="number" step="1" name="radius_m" class="form-control" value="{{ $company->radius_km * 1000 }}">
                                         </div>
                                     </div>
                                     <div class="row">

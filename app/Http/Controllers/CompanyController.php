@@ -19,7 +19,12 @@ class CompanyController extends Controller
 
     public function update(Request $request, $id) {
         $company = Company::find($id);
-        $company->update($request->all());
+        $data = $request->all();
+        if ($request->filled('radius_m')) {
+            $data['radius_km'] = ((float) $request->input('radius_m')) / 1000.0;
+        }
+        unset($data['radius_m']);
+        $company->update($data);
         return redirect()->route('company.show', $company->id)->with('success', 'Company updated successfully');
     }
 }

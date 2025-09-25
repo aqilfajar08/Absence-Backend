@@ -38,7 +38,7 @@ class PermissionController extends Controller
         
         // Get user name for notification
         $userName = $permission->user->name ?? 'Unknown User';
-        $this->sendNotificationToUser($permission->user_id, '(' . $userName . ') Status Izin:' . $str);
+        $this->sendNotificationToUser($permission->user_id, '(' . $userName . ') Status Izin: ' . $str);
         
         // Fix the redirect - remove the ID parameter since index doesn't need it
         return redirect()->route('permission.index')->with('success', 'Permission updated successfully');

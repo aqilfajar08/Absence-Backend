@@ -44,8 +44,8 @@
                                         <p>{{ $company->email }}</p>
                                     </div>
                                     <div class="form-group col-md-6 col-12">
-                                        <label>Radius KM</label>
-                                        <p>{{ $company->radius_km }}</p>
+                                        <label>Radius M</label>
+                                        <p>{{ $company->radius_km * 1000 }}</p>
                                     </div>
                                 </div>
                                 <div class="row">
