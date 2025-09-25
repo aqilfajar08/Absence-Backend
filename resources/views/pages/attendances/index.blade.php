@@ -61,14 +61,17 @@
                                     <table class="table-striped table">
                                         <tr>
                                             <th>Name</th>
-                                            <th>date</th>
-                                            <th>time_in</th>
-                                            <th>time_out</th>
-                                            <th>latlon in</th>
-                                            <th>latlon out</th>
+                                            <th>Date</th>
+                                            <th>Time In</th>
+                                            <th>Time Out</th>
+                                            <th>Latlon In</th>
+                                            <th>Latlon Out</th>
                                         </tr>
                                         @foreach ($attendances as $attendance)
                                         <tr>                                            
+                                            <td>
+                                                {{ $attendance->user->name }}
+                                            </td>
                                             <td>
                                                 {{ $attendance->date_attendance }}
                                             </td>
