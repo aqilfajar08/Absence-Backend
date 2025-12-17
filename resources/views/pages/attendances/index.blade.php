@@ -122,7 +122,7 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form action="{{ route('attendance.deleteByMonth') }}" method="POST" onsubmit="console.log('Form submitted with month:', document.getElementById('deleteMonth').value); return confirm('Are you sure you want to delete ALL attendance data for the selected month? This action cannot be undone!')">
+            <form action="{{ route('attendance.deleteByMonth') }}" method="POST" onsubmit="return confirm('Are you sure you want to delete ALL attendance data for the selected month? This action cannot be undone!')">
                 @csrf
                 <div class="modal-body">
                     <div class="alert alert-danger">
