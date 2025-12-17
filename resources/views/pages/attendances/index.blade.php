@@ -13,6 +13,11 @@
         <section class="section">
             <div class="section-header">
                 <h1>Attendance</h1>
+                <div class="section-header-button">
+                    <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#deleteModal">
+                        <i class="fas fa-trash"></i> Delete Data by Month
+                    </button>
+                </div>
                 <div class="section-header-breadcrumb">
                     <div class="breadcrumb-item active"><a href="#">Dashboard</a></div>
                     <div class="breadcrumb-item"><a href="#">Attendance</a></div>
@@ -104,6 +109,45 @@
         </section>
     </div>
 @endsection
+
+<!-- Delete Attendance Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">
+                    <i class="fas fa-trash-alt text-danger"></i> Delete Attendance Data by Month
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form action="{{ route('attendance.deleteByMonth') }}" method="POST" onsubmit="console.log('Form submitted with month:', document.getElementById('deleteMonth').value); return confirm('Are you sure you want to delete ALL attendance data for the selected month? This action cannot be undone!')">
+                @csrf
+                <div class="modal-body">
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Warning!</strong> This action cannot be undone. All attendance records for the selected month across ALL users will be permanently deleted.
+                    </div>
+                    <div class="form-group">
+                        <label for="deleteMonth">Select Month to Delete</label>
+                        <input type="month" class="form-control" id="deleteMonth" name="month" required min="2020-01" max="2030-12">
+                        <small class="form-text text-muted">Format: YYYY-MM (e.g., 2025-12 for December 2025)</small>
+                    </div>
+                    <p class="text-muted mb-0">
+                        This will delete <strong>ALL attendance records</strong> for the selected month from <strong>ALL users</strong>.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Delete All Data
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 @push('scripts')
     <!-- JS Libraies -->

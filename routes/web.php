@@ -21,6 +21,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('user/{id}/permission', [UserController::class, 'userPermission'])->name('user.permission');
     Route::resource('company', CompanyController::class)->except('create', 'index', 'destroy');
     Route::resource('attendance', AttendanceController::class);
+    Route::post('attendance/delete-by-month', [AttendanceController::class, 'deleteByMonth'])->name('attendance.deleteByMonth');
     Route::resource('permission', PermissionController::class);
 });
 
