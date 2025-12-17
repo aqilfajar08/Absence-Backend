@@ -17,6 +17,7 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('user', UserController::class);
     Route::get('user/export/attendance', [UserController::class, 'exportAttendance'])->name('user.export.attendance');
     Route::get('user/{id}/attendance', [UserController::class, 'userAttendance'])->name('user.attendance');
+    Route::delete('user/{id}/attendance', [UserController::class, 'deleteAttendanceByMonth'])->name('user.attendance.delete');
     Route::get('user/{id}/permission', [UserController::class, 'userPermission'])->name('user.permission');
     Route::resource('company', CompanyController::class)->except('create', 'index', 'destroy');
     Route::resource('attendance', AttendanceController::class);

@@ -84,6 +84,35 @@
                     </div>
                 </div>
 
+                <!-- Data Management -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card card-danger">
+                            <div class="card-header">
+                                <h4><i class="fas fa-trash-alt"></i> Delete Attendance Data</h4>
+                            </div>
+                            <div class="card-body">
+                                <p class="text-muted">Select a month to delete all attendance records for that period. This action cannot be undone.</p>
+                                <form action="{{ route('user.attendance.delete', $user->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete all attendance data for the selected month? This action cannot be undone.')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <div class="form-row">
+                                        <div class="col-md-4">
+                                            <label for="month">Select Month</label>
+                                            <input type="month" class="form-control" id="month" name="month" required>
+                                        </div>
+                                        <div class="col-md-4 d-flex align-items-end">
+                                            <button type="submit" class="btn btn-danger">
+                                                <i class="fas fa-trash"></i> Delete Data
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Attendance Table -->
                 <div class="row">
                     <div class="col-12">

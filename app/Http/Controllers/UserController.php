@@ -152,6 +152,26 @@ class UserController extends Controller
         return view('pages.users.attendance', compact('user', 'attendances', 'currentMonth'));
     }
 
+    public function deleteAttendanceByMonth(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+        
+        $request->validate([
+            'month' => 'required|date_format:Y-m',
+        ]);
+        
+        $month = Carbon::createFromFormat('Y-m', $request->month);
+        $startOfMonth = $month->copy()->startOfMonth();
+        $endOfMonth = $month->copy()->endOfMonth();
+        
+        // Delete attendance records for the specified month
+        $deletedCount = Attendance::where('user_id', $user->id)
+            ->whereBetween('date_attendance', [$startOfMonth->format('Y-m-d'), $endOfMonth->format('Y-m-d')])
+            ->delete();
+        
+        return redirect()->back()->with('success', "Deleted {$deletedCount} attendance records for {$month->format('F Y')}.");
+    }
+
     public function userPermission($id)
     {
         $user = User::findOrFail($id);
