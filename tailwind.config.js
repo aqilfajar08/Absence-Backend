@@ -11,8 +11,12 @@ export default {
     ],
     theme: {
         extend: {
-            fontFamily: {
-                sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+            colors: {
+                brand: {
+                    maroon: "#8b0b0a",
+                    gold: "#a78221",
+                    cream: "#d9cea9",
+                },
             },
         },
     },

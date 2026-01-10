@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Attendance;
+use App\Models\Company;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -10,8 +11,9 @@ class AttendanceController extends Controller
 {
     public function index()
     {
-        $attendances = Attendance::with('user')->orderBy('id', 'desc')->paginate(10); 
-        return view('pages.attendances.index', compact('attendances')); 
+        $attendances = Attendance::with('user')->orderBy('id', 'desc')->paginate(10);
+        $company = Company::first();
+        return view('pages.attendances.index', compact('attendances', 'company')); 
     }
 
     public function destroy(Attendance $attendance)
@@ -49,5 +51,24 @@ class AttendanceController extends Controller
 
         $monthName = $startOfMonth->format('F Y');
         return redirect('/attendance')->with('success', "Successfully deleted {$deletedCount} attendance records for {$monthName} across all users.");
+    }
+
+    public function updateStatus(Request $request, $id)
+    {
+        // Validate user role
+        if (!auth()->user()->hasRole(['admin', 'receptionist'])) {
+            return redirect()->route('attendance.index')->with('error', 'Unauthorized action.');
+        }
+
+        $request->validate([
+            'status' => 'required|in:ontime,late',
+        ]);
+
+        $attendance = Attendance::findOrFail($id);
+        $attendance->is_late = ($request->status === 'late');
+        $attendance->save();
+
+        $statusText = $request->status === 'late' ? 'Terlambat' : 'Tepat Waktu';
+        return redirect()->route('attendance.index')->with('success', "Status kehadiran berhasil diubah menjadi: {$statusText}");
     }
 }

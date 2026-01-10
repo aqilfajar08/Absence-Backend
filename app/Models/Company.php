@@ -19,6 +19,7 @@ class Company extends Model
         'longitude',
         'radius_km',
         'time_in',
-        'time_out'
+        'time_out',
+        'late_fee_per_minute'
     ];
 }

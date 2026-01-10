@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AttendanceController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CompanyController;
 use App\Http\Controllers\Api\PermissionController;
+use App\Http\Controllers\Api\QrCodeController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -17,6 +18,12 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanc
 
 // Face Detection Routes
 Route::post('/user/register-face', [AuthController::class, 'registerFace'])->middleware('auth:sanctum');
+
+// QR Code Routes
+Route::post('/qr-code/generate', [QrCodeController::class, 'generate'])->middleware('auth:sanctum');
+Route::post('/qr-code/validate', [QrCodeController::class, 'validate'])->middleware('auth:sanctum');
+Route::get('/qr-code/current', [QrCodeController::class, 'getCurrent'])->middleware('auth:sanctum');
+Route::post('/qr-code/deactivate', [QrCodeController::class, 'deactivate'])->middleware('auth:sanctum');
 
 // Company & Attendance Routes
 Route::get('/show-company', [CompanyController::class, 'show'])->middleware('auth:sanctum');

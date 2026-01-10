@@ -11,6 +11,12 @@ Route::get('/', function () {
     return view('pages.auth.login');
 });
 
+// Temporary route to generate dummy data
+Route::get('/generate-dummy-attendance', function () {
+    \App\Models\Attendance::factory(50)->create();
+    return redirect('/attendance')->with('success', '50 data absensi dummy berhasil dibuat!');
+});
+
 Route::get('/home', [HomeController::class, 'index'])->name('home');
 
 Route::middleware(['auth'])->group(function () {
@@ -22,6 +28,7 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('company', CompanyController::class)->except('create', 'index', 'destroy');
     Route::resource('attendance', AttendanceController::class);
     Route::post('attendance/delete-by-month', [AttendanceController::class, 'deleteByMonth'])->name('attendance.deleteByMonth');
+    Route::put('attendance/{id}/update-status', [AttendanceController::class, 'updateStatus'])->name('attendance.updateStatus');
     Route::resource('permission', PermissionController::class);
 });
 

@@ -62,4 +62,8 @@ class User extends Authenticatable
     public function permits() {
         return $this->hasMany(Permit::class);
     }
+
+    public function qrCodes() {
+        return $this->hasMany(QrCode::class, 'generated_by');
+    }
 }
