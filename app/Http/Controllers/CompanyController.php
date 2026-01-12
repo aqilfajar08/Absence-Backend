@@ -25,6 +25,6 @@ class CompanyController extends Controller
         }
         unset($data['radius_m']);
         $company->update($data);
-        return redirect()->route('company.show', $company->id)->with('success', 'Company updated successfully');
+        return redirect()->route('company.edit', $company->id)->with('success', 'Pengaturan berhasil disimpan.');
     }
 }

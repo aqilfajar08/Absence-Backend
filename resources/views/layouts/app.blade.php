@@ -70,12 +70,13 @@
              x-transition:leave="transition ease-in-out duration-300 transform"
              x-transition:leave-start="translate-x-0"
              x-transition:leave-end="-translate-x-full"
-             class="fixed inset-y-0 left-0 z-50 w-64 lg:hidden"
+             class="fixed inset-y-0 left-0 z-50 w-64 lg:hidden flex flex-col h-full bg-brand-maroon shadow-2xl"
              style="display: none;">
-            <div class="flex flex-col flex-grow bg-gradient-to-b from-brand-maroon to-brand-maroon/90 pt-5 pb-4 overflow-y-auto">
+            
+            <div class="flex flex-col flex-1 h-full pt-5 pb-4 overflow-y-auto">
                 <div class="flex items-center justify-between px-4 mb-8">
                     <div class="flex items-center">
-                        <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center overflow-hidden">
+                        <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
                             <img src="{{ asset('img/logo_kasau.png') }}" alt="Logo KASAU" class="w-8 h-8 object-contain">
                         </div>
                         <div class="ml-3 leading-tight">
@@ -83,7 +84,7 @@
                             <p class="text-[10px] text-white/70">KASAU SINAR SAMUDERA</p>
                         </div>
                     </div>
-                    <button @click="sidebarOpen = false" class="text-white">
+                    <button @click="sidebarOpen = false" class="text-white hover:text-white/80 transition p-1">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
@@ -113,5 +114,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
         </svg>
     </button>
+    <!-- Sweet Alert -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 </html>

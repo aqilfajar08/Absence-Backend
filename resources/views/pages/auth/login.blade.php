@@ -46,16 +46,45 @@
     </style>
 </head>
 <body class="h-full">
-    
-    {{-- Background Image dengan Overlay --}}
-    <div class="login-bg min-h-screen relative" 
-         style="background-image: url('{{ asset('img/login/derawanpier.png') }}');">
+    {{-- Background Image dengan Slideshow Alpine.js --}}
+    <div class="login-bg min-h-screen relative overflow-hidden" 
+        x-data="{
+            images: [
+                '{{ asset('img/login/bg1.jpg') }}',
+                '{{ asset('img/login/bg2.jpg') }}',
+                '{{ asset('img/login/bg3.jpg') }}',
+                '{{ asset('img/login/bg4.jpg') }}',
+                '{{ asset('img/login/bg5.jpg') }}',
+                '{{ asset('img/login/bg6.jpg') }}',
+            ],
+            activeImage: 0,
+            init() {
+                // Ganti slide setiap 5 detik (5000ms)
+                setInterval(() => {
+                    this.activeImage = (this.activeImage + 1) % this.images.length;
+                }, 5000);
+            }
+        }">
         
-        {{-- Dark Overlay --}}
-        <div class="absolute inset-0 bg-gradient-to-br from-black/70 via-black/50 to-black/70"></div>
+        {{-- Loop Gambar Background dengan efek Fade --}}
+        <template x-for="(image, index) in images" :key="index">
+            <div x-show="activeImage === index"
+                 x-transition:enter="transition ease-in-out duration-1000"
+                 x-transition:enter-start="opacity-0 scale-105"
+                 x-transition:enter-end="opacity-100 scale-100"
+                 x-transition:leave="transition ease-in-out duration-1000"
+                 x-transition:leave-start="opacity-100 scale-100"
+                 x-transition:leave-end="opacity-0 scale-105"
+                 class="absolute inset-0 bg-cover bg-center transform will-change-transform"
+                 :style="`background-image: url('${image}');`">
+            </div>
+        </template>
         
-        {{-- Content Container --}}
-        <div class="relative z-10 min-h-screen flex items-center justify-center p-4">
+        {{-- Dark Overlay (z-10 agar di atas gambar) --}}
+        <div class="absolute inset-0 bg-gradient-to-br from-black/70 via-black/50 to-black/70 z-10"></div>
+        
+        {{-- Content Container (z-20 agar paling atas dan bisa diklik) --}}
+        <div class="relative z-20 min-h-screen flex items-center justify-center p-4">
             
             <div class="w-full max-w-6xl">
                 
@@ -113,12 +142,12 @@
                                     Email
                                 </label>
                                 <input type="email" 
-                                       id="email" 
-                                       name="email" 
-                                       required 
-                                       autofocus
-                                       class="glass-input w-full px-4 py-3 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-brand-gold/50 transition"
-                                       placeholder="nama@email.com">
+                                    id="email" 
+                                    name="email" 
+                                    required 
+                                    autofocus
+                                    class="glass-input w-full px-4 py-3 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-brand-gold/50 transition"
+                                    placeholder="nama@email.com">
                             </div>
                             
                             {{-- Password Input --}}
@@ -136,8 +165,8 @@
                                     
                                     {{-- Toggle Button --}}
                                     <button type="button"
-                                            @click="showPassword = !showPassword"
-                                            class="absolute right-3 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition">
+                                        @click="showPassword = !showPassword"
+                                        class="absolute right-3 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             {{-- Icon Mata Terbuka (password hidden) --}}
                                             <g x-show="!showPassword">
@@ -157,15 +186,15 @@
                             <div class="flex items-center justify-between pt-2">
                                 <label class="flex items-center cursor-pointer">
                                     <input type="checkbox" 
-                                           name="remember" 
-                                           class="w-4 h-4 text-brand-gold bg-white/10 border-white/30 rounded focus:ring-brand-gold focus:ring-offset-0">
+                                        name="remember" 
+                                        class="w-4 h-4 text-brand-gold bg-white/10 border-white/30 rounded focus:ring-brand-gold focus:ring-offset-0">
                                     <span class="ml-2 text-sm text-white/80">Ingat saya</span>
                                 </label>
                             </div>
                             
                             {{-- Login Button --}}
                             <button type="submit" 
-                                    class="w-full bg-brand-maroon hover:bg-brand-maroon/90 text-white font-semibold py-3.5 px-4 rounded-lg transition-all shadow-lg shadow-brand-maroon/30 hover:shadow-brand-maroon/50 mt-6">
+                                class="w-full bg-brand-maroon hover:bg-brand-maroon/90 text-white font-semibold py-3.5 px-4 rounded-lg transition-all shadow-lg shadow-brand-maroon/30 hover:shadow-brand-maroon/50 mt-6">
                                 Masuk
                             </button>
                         </form>

@@ -4,16 +4,36 @@ namespace App\Http\Controllers;
 
 use App\Models\Attendance;
 use App\Models\Company;
+use App\Exports\AttendanceExport;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Maatwebsite\Excel\Facades\Excel;
 
 class AttendanceController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $attendances = Attendance::with('user')->orderBy('id', 'desc')->paginate(10);
+        $query = Attendance::with('user');
+
+        if ($request->filled('start_date') && $request->filled('end_date')) {
+            $query->whereBetween('date_attendance', [$request->start_date, $request->end_date]);
+        }
+
+        if ($request->filled('search')) {
+            $query->whereHas('user', function($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        $attendances = $query->orderBy('date_attendance', 'desc')->orderBy('id', 'desc')->paginate(10)->withQueryString();
         $company = Company::first();
         return view('pages.attendances.index', compact('attendances', 'company')); 
+    }
+
+    public function export(Request $request) 
+    {
+        $filename = 'laporan-absensi-' . date('d-m-Y-H-i') . '.xlsx';
+        return Excel::download(new AttendanceExport($request), $filename);
     }
 
     public function destroy(Attendance $attendance)
@@ -49,8 +69,13 @@ class AttendanceController extends Controller
             $endOfMonth->format('Y-m-d')
         ])->delete();
 
-        $monthName = $startOfMonth->format('F Y');
-        return redirect('/attendance')->with('success', "Successfully deleted {$deletedCount} attendance records for {$monthName} across all users.");
+                $monthName = $startOfMonth->format('F Y');
+
+        if ($deletedCount > 0) {
+            return redirect('/attendance')->with('success', "Berhasil menghapus {$deletedCount} data absensi untuk bulan {$monthName}.");
+        } else {
+            return redirect('/attendance')->with('error', "Tidak ada data absensi yang ditemukan untuk bulan {$monthName}.");
+        }
     }
 
     public function updateStatus(Request $request, $id)

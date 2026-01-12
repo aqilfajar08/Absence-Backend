@@ -20,6 +20,7 @@ class Company extends Model
         'radius_km',
         'time_in',
         'time_out',
-        'late_fee_per_minute'
+        'late_fee_per_minute',
+        'late_fee_interval_minutes'
     ];
 }

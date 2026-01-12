@@ -29,61 +29,19 @@
         Laporan
     </a>
 
-    {{-- 3. Data Karyawan Menu (dengan submenu) --}}
-    <div x-data="{ open: {{ request()->routeIs('user.*') ? 'true' : 'false' }} }">
-        {{-- Menu utama yang bisa diklik untuk buka/tutup submenu --}}
-        <button @click="open = !open" 
-                class="w-full group flex items-center justify-between px-3 py-3 text-sm font-medium rounded-lg transition-all duration-200
-                       {{ request()->routeIs('user.*') 
-                           ? 'bg-white bg-opacity-20 text-white' 
-                           : 'text-white hover:bg-white hover:bg-opacity-10' }}">
-            <div class="flex items-center">
-                {{-- Icon Data Karyawan --}}
-                <svg class="mr-3 h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                          d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                </svg>
-                Data Karyawan
-            </div>
-            {{-- Arrow icon (berputar saat submenu dibuka) --}}
-            <svg class="h-5 w-5 transition-transform duration-200" 
-                 :class="{ 'rotate-180': open }"
-                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-            </svg>
-        </button>
-
-        {{-- Submenu (muncul saat diklik) --}}
-        <div x-show="open" 
-             x-transition:enter="transition ease-out duration-200"
-             x-transition:enter-start="opacity-0 transform -translate-y-2"
-             x-transition:enter-end="opacity-100 transform translate-y-0"
-             x-transition:leave="transition ease-in duration-150"
-             x-transition:leave-start="opacity-100 transform translate-y-0"
-             x-transition:leave-end="opacity-0 transform -translate-y-2"
-             class="mt-2 space-y-1 pl-11">
-            
-            {{-- Submenu: Semua Karyawan --}}
-            <a href="{{ route('user.index') }}" 
-               class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200
-                      {{ request()->routeIs('user.index') 
-                          ? 'bg-white bg-opacity-20 text-white' 
-                          : 'text-white hover:bg-white hover:bg-opacity-10' }}">
-                <span class="w-2 h-2 bg-brand-gold rounded-full mr-3"></span>
-                Semua Karyawan
-            </a>
-
-            {{-- Submenu: Resepsionis --}}
-            <a href="{{ route('user.index', ['role' => 'receptionist']) }}" 
-               class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200
-                      {{ request()->get('role') == 'receptionist' 
-                          ? 'bg-white bg-opacity-20 text-white' 
-                          : 'text-white hover:bg-white hover:bg-opacity-10' }}">
-                <span class="w-2 h-2 bg-brand-gold rounded-full mr-3"></span>
-                Resepsionis
-            </a>
-        </div>
-    </div>
+    {{-- 3. Data Karyawan Menu --}}
+    <a href="{{ route('user.index') }}" 
+       class="group flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-all duration-200
+              {{ request()->routeIs('user.*') 
+                  ? 'bg-white bg-opacity-20 text-white' 
+                  : 'text-white hover:bg-white hover:bg-opacity-10' }}">
+        {{-- Icon Data Karyawan --}}
+        <svg class="mr-3 h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+        </svg>
+        Data Karyawan
+    </a>
 
     {{-- 4. Pengaturan Menu --}}
     <a href="{{ route('company.edit', 1) }}" 
@@ -120,49 +78,52 @@
             Keluar 
         </button>
         {{-- Modal Konfirmasi Logout --}}
-        <div x-show="showLogoutModal"
-            x-cloak
-            @click.self="showLogoutModal = false"
-            class="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm"
-            style="display: none;">
-            
-            <div @click.away="showLogoutModal = false"
-                x-transition:enter="transition ease-out duration-200"
-                x-transition:enter-start="opacity-0 scale-95"
-                x-transition:enter-end="opacity-100 scale-100"
-                x-transition:leave="transition ease-in duration-150"
-                x-transition:leave-start="opacity-100 scale-100"
-                x-transition:leave-end="opacity-0 scale-95"
-                class="bg-white rounded-2xl shadow-2xl max-w-sm w-full mx-4 overflow-hidden">
+        <template x-teleport="body">
+            <div x-show="showLogoutModal"
+                x-cloak
+                @click.self="showLogoutModal = false"
+                class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm"
+                style="display: none;">
                 
-                {{-- Header --}}
-                <div class="bg-brand-maroon px-6 py-4">
-                    <h3 class="text-lg font-bold text-white">Konfirmasi Keluar</h3>
-                </div>
+                <div @click.away="showLogoutModal = false"
+                    x-show="showLogoutModal"
+                    x-transition:enter="transition ease-out duration-200"
+                    x-transition:enter-start="opacity-0 scale-95"
+                    x-transition:enter-end="opacity-100 scale-100"
+                    x-transition:leave="transition ease-in duration-150"
+                    x-transition:leave-start="opacity-100 scale-100"
+                    x-transition:leave-end="opacity-0 scale-95"
+                    class="bg-white rounded-2xl shadow-2xl max-w-sm w-full mx-4 overflow-hidden">
+                    
+                    {{-- Header --}}
+                    <div class="bg-brand-maroon px-6 py-4">
+                        <h3 class="text-lg font-bold text-white">Konfirmasi Keluar</h3>
+                    </div>
 
-                {{-- Body --}}
-                <div class="px-6 py-5">
-                    <p class="text-gray-700">
-                        Apakah anda yakin ingin keluar dari sistem?
-                    </p>
-                </div>
+                    {{-- Body --}}
+                    <div class="px-6 py-5">
+                        <p class="text-gray-700">
+                            Apakah anda yakin ingin keluar dari sistem?
+                        </p>
+                    </div>
 
-                {{-- Footer --}}
-                <div class="px-6 py-4 flex gap-3 justify-end">
-                    <button @click="showLogoutModal = false"
-                            class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition">
-                        Batal
-                    </button>
-
-                    <form method="POST" action="{{ route('logout') }}" class="inline">
-                        @csrf
-                        <button type="submit"
-                                class="px-4 py-2 rounded-lg bg-brand-maroon text-white hover:bg-brand-maroon/90 transition">
-                            Ya
+                    {{-- Footer --}}
+                    <div class="px-6 py-4 flex gap-3 justify-end">
+                        <button @click="showLogoutModal = false"
+                                class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition">
+                            Batal
                         </button>
-                    </form>
+
+                        <form method="POST" action="{{ route('logout') }}" class="inline">
+                            @csrf
+                            <button type="submit"
+                                    class="px-4 py-2 rounded-lg bg-brand-maroon text-white hover:bg-brand-maroon/90 transition">
+                                Ya
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
-        </div>
+        </template>
     </div>
 </nav>

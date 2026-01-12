@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Facades\Excel;
 use Carbon\Carbon;
 
+use Spatie\Permission\Models\Role;
 use function Pest\Laravel\post;
 
 class UserController extends Controller
@@ -28,7 +29,8 @@ class UserController extends Controller
 
     public function create()
     {
-        return view('pages.users.create');
+        $roles = Role::all();
+        return view('pages.users.create', compact('roles'));
     }
 
     public function show($id)
@@ -58,7 +60,7 @@ class UserController extends Controller
 
         $request->validate([
             'name' => 'required',
-            'position' => 'nullable',
+            'role' => 'required', // Role is required now
             'department' => 'nullable',
             'password' => 'required',
             'email' => 'required|email',
@@ -66,38 +68,50 @@ class UserController extends Controller
             'tunjangan' => 'nullable|numeric|min:0',
         ]);
 
-        User::create([
+        $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'position' => $request->position,
+            'position' => $request->role, // Optionally store role name in position field for backward compatibility
             'department' => $request->department,
             'password' => Hash::make($request->password),
             'gaji_pokok' => $request->gaji_pokok,
             'tunjangan' => $request->tunjangan,
         ]);
+
+        $user->assignRole($request->role);
+
         return redirect()->route('user.index')->with('success', 'User created successfully');
     }
     
     public function edit($id)
     {
         $user = User::findOrFail($id);
-        return view('pages.users.edit', compact('user'));
+        $roles = Role::all();
+        return view('pages.users.edit', compact('user', 'roles'));
     }
 
     public function update(Request $request, User $user)
     {
         $request->validate([
             'name' => 'required',
-            'position' => 'nullable',
+            'role' => 'required',
             'department' => 'nullable',
             'email' => 'required|email',
             'gaji_pokok' => 'nullable|numeric|min:0',
             'tunjangan' => 'nullable|numeric|min:0',
         ]);
         
-        $data = $request->except('password');
+        $data = $request->except(['password', 'role']);
+        
+        // Update position explicitly if needed for backward compatibility
+        $data['position'] = $request->role; 
+
+        if ($request->filled('password')) {
+            $data['password'] = Hash::make($request->password);
+        }
 
         $user->update($data);
+        $user->syncRoles($request->role);
 
         return redirect()->route('user.index')->with('success', 'User updated successfully');
     }

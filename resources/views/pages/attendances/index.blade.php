@@ -3,14 +3,42 @@
 @section('title', 'Laporan - Absensi Karyawan')
 
 @section('content')
+@php
+    $reqStartDate = request('start_date');
+    $reqEndDate = request('end_date');
+    $reqSearch = request('search');
+    $today = date('Y-m-d');
+    
+    $currentFilterType = 'all';
+    if ($reqStartDate == $today && $reqEndDate == $today) {
+        $currentFilterType = 'today';
+    } elseif (!empty($reqStartDate) && !empty($reqEndDate)) {
+        $currentFilterType = 'custom';
+    }
+@endphp
 <div x-data="{ 
     showDeleteModal: false,
     showEditModal: false,
     selectedMonth: '',
-    searchQuery: '',
-    filterDate: '',
+    searchQuery: '{{ $reqSearch }}',
+    filterType: '{{ $currentFilterType }}',
+    startDate: '{{ $reqStartDate }}',
+    endDate: '{{ $reqEndDate }}',
     editAttendanceId: null,
-    editStatus: ''
+    editStatus: '',
+    updateFilter() {
+        if (this.filterType === 'today') {
+            const today = new Date().toISOString().split('T')[0];
+            this.startDate = today;
+            this.endDate = today;
+            this.$nextTick(() => this.$refs.filterForm.submit());
+        } else if (this.filterType === 'all') {
+            this.startDate = '';
+            this.endDate = '';
+            this.searchQuery = '';
+            this.$nextTick(() => this.$refs.filterForm.submit());
+        }
+    }
 }">
     {{-- Page Header Card --}}
     <div class="mb-6">
@@ -92,55 +120,99 @@
         </div>
     </div>
 
-    {{-- Alerts --}}
+        {{-- Alerts --}}
     @if(session('success'))
-    <div class="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
+    <div x-data="{ show: true }" x-show="show" x-transition.opacity class="mb-6 bg-green-50 border border-green-200 rounded-lg p-4 flex items-start justify-between">
         <div class="flex items-center">
-            <svg class="w-5 h-5 text-green-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-5 h-5 text-green-600 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
             <p class="text-sm font-medium text-green-800">{{ session('success') }}</p>
         </div>
+        <button @click="show = false" class="text-green-500 hover:text-green-700 transition ml-4">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
     </div>
     @endif
 
     @if(session('error'))
-    <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+    <div x-data="{ show: true }" x-show="show" x-transition.opacity class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-start justify-between">
         <div class="flex items-center">
-            <svg class="w-5 h-5 text-red-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-5 h-5 text-red-600 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
             <p class="text-sm font-medium text-red-800">{{ session('error') }}</p>
         </div>
+        <button @click="show = false" class="text-red-500 hover:text-red-700 transition ml-4">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
     </div>
     @endif
 
     {{-- Table Card --}}
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        {{-- Table Header with Search --}}
         <div class="p-6 border-b border-gray-200">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div class="flex-1 max-w-md">
-                    <div class="relative">
-                        <input type="text" 
-                               x-model="searchQuery"
-                               placeholder="Cari nama karyawan"
-                               class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-maroon/20 focus:border-brand-maroon transition">
-                        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            <form action="{{ route('attendance.index') }}" method="GET" x-ref="filterForm" class="flex flex-col lg:flex-row lg:items-center gap-4">
+                {{-- Search --}}
+                <div class="flex-1 max-w-md relative">
+                    <input type="text" 
+                           name="search"
+                           x-model="searchQuery"
+                           placeholder="Cari nama karyawan..."
+                           class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-maroon/20 focus:border-brand-maroon transition">
+                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                </div>
+
+                {{-- Filter Options --}}
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <select x-model="filterType"
+                            @change="updateFilter()"
+                            class="px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-maroon/20 focus:border-brand-maroon transition bg-white min-w-[140px]">
+                        <option value="all">Semua Hari</option>
+                        <option value="today">Hari Ini</option>
+                        <option value="custom">Custom</option>
+                    </select>
+
+                    <template x-if="filterType === 'custom'">
+                        <div class="flex items-center gap-2 animate-fadeIn">
+                            <input type="date" 
+                                   x-model="startDate"
+                                   class="px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-maroon/20 focus:border-brand-maroon transition text-sm">
+                            <span class="text-gray-500 font-medium">-</span>
+                            <input type="date" 
+                                   x-model="endDate"
+                                   class="px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-maroon/20 focus:border-brand-maroon transition text-sm">
+                            
+                            <button type="submit"
+                                    class="px-4 py-2.5 bg-brand-maroon text-white font-medium rounded-lg hover:bg-brand-maroon/90 transition shadow-sm">
+                                Filter
+                            </button>
+                        </div>
+                    </template>
+                    
+                    {{-- Hidden inputs for form submission --}}
+                    <input type="hidden" name="start_date" x-model="startDate">
+                    <input type="hidden" name="end_date" x-model="endDate">
+                </div>
+
+                <div class="ml-auto">
+                    {{-- Tombol Export CSV --}}
+                    {{-- request()->query() akan otomatis membawa filter (tanggal/search) yang sedang aktif ke link export --}}
+                    <a href="{{ route('attendance.export', request()->query()) }}" target="_blank"
+                    class="inline-flex items-center px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg transition font-medium shadow-sm">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                         </svg>
-                    </div>
+                        Ekspor ke Excel
+                    </a>
                 </div>
-                <div class="flex items-center gap-3">
-                    <input type="date" 
-                           x-model="filterDate"
-                           class="px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-maroon/20 focus:border-brand-maroon transition">
-                    <button @click="searchQuery = ''; filterDate = ''"
-                            class="px-4 py-2.5 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition font-medium">
-                        Reset
-                    </button>
-                </div>
-            </div>
+            </form>
         </div>
 
         {{-- Table --}}
@@ -148,68 +220,90 @@
             <table class="w-full">
                 <thead class="bg-gray-50 border-b border-gray-200">
                     <tr>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Nama Karyawan</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Tanggal</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Jam Datang</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Denda</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Aksi</th>
+                        <th class="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Nama Karyawan</th>
+                        <th class="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Tanggal</th>
+                        <th class="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Jam Datang</th>
+                        <th class="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Denda</th>
+                        <th class="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200">
                     @forelse ($attendances as $attendance)
-                    <tr class="hover:bg-gray-50 transition"
-                        x-show="(searchQuery === '' || '{{ strtolower($attendance->user->name) }}'.includes(searchQuery.toLowerCase())) && 
-                                (filterDate === '' || '{{ $attendance->date_attendance }}' === filterDate)">
+                    <tr class="hover:bg-gray-50 transition">
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center">
-                                <div class="flex-shrink-0 h-10 w-10 bg-gradient-to-br from-brand-maroon to-brand-maroon/80 rounded-full flex items-center justify-center">
-                                    <span class="text-white font-semibold text-sm">{{ strtoupper(substr($attendance->user->name, 0, 2)) }}</span>
-                                </div>
+                                    <div class="h-10 w-10 flex-shrink-0">
+                                        <div class="h-10 w-10 rounded-full bg-brand-gold/20 flex items-center justify-center text-brand-gold font-bold text-sm">
+                                            {{ strtoupper(substr($attendance->user->name, 0, 2)) }}
+                                        </div>
+                                    </div>
                                 <div class="ml-4">
                                     <div class="text-sm font-medium text-gray-900">{{ $attendance->user->name }}</div>
                                     <div class="text-xs text-gray-500">{{ $attendance->user->email }}</div>
                                 </div>
                             </div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
+                        <td class="px-6 py-4 whitespace-nowrap text-center">
                             <div class="text-sm text-gray-900">{{ \Carbon\Carbon::parse($attendance->date_attendance)->format('d M Y') }}</div>
                             <div class="text-xs text-gray-500">{{ \Carbon\Carbon::parse($attendance->date_attendance)->format('l') }}</div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
+                        <td class="px-6 py-4 whitespace-nowrap text-center">
                             @if($attendance->time_in)
-                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
-                                </svg>
+                            <div class="text-sm text-gray-900">
                                 {{ \Carbon\Carbon::parse($attendance->time_in)->format('H:i') }}
-                            </span>
+                            </div>
                             @else
                             <span class="text-xs text-gray-400">-</span>
                             @endif
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
+                        <td class="px-6 py-4 whitespace-nowrap text-center">
                             @if($attendance->time_in && $attendance->is_late)
                                 @php
-                                    $timeIn = \Carbon\Carbon::parse($attendance->time_in);
-                                    $cutoffTime = \Carbon\Carbon::parse($company->time_in ?? '09:00:00');
-                                    $minutesLate = $timeIn->diffInMinutes($cutoffTime);
-                                    $lateFee = $minutesLate * ($company->late_fee_per_minute ?? 1000);
+                                    $lateFee = 0;
+                                    $minutesLate = 0;
+                                    if($attendance->is_late && $attendance->time_in) {
+                                        $timeIn = \Carbon\Carbon::parse($attendance->time_in);
+                                        $cutoffTime = \Carbon\Carbon::parse($company->time_in ?? '09:00:00');
+                                        
+                                        // Samakan tanggal agar hanya membandingkan JAM
+                                        $cutoffTime->setDate($timeIn->year, $timeIn->month, $timeIn->day);
+
+                                        // Jika Absen LEBIH DARI Jam Masuk -> BENAR TERLAMBAT
+                                        if ($timeIn->gt($cutoffTime)) {
+                                            $minutesLate = ceil($timeIn->diffInMinutes($cutoffTime));
+                                        } else {
+                                            // Jika Absen <= Jam Masuk TAPI status 'Late' (Data aneh/manual)
+                                            // Kita anggap 0 menit saja biar ga minus
+                                            $minutesLate = 0;
+                                        }
+
+                                        // --- UPDATE TERAKHIR: PAKSA ABSOLUT BIAR GAK MINUS APAPUN YANG TERJADI ---
+                                        $minutesLate = abs($minutesLate); 
+
+                                        if ($minutesLate > 0) {
+                                            $interval = max(1, $company->late_fee_interval_minutes ?? 1); // Hindari division by zero
+                                            $feePerInterval = $company->late_fee_per_minute ?? 1000;
+                                            
+                                            $intervals = ceil($minutesLate / $interval);
+                                            $lateFee = $intervals * $feePerInterval;
+                                        }
+                                    }
                                 @endphp
                                 <div class="text-sm">
-                                    <div class="font-semibold text-red-600">Rp {{ number_format($lateFee, 0, ',', '.') }}</div>
-                                    <div class="text-xs text-gray-500">{{ $minutesLate }} menit terlambat</div>
+                                    <div class="font-semibold text-red-600">Rp {{ number_format(abs($lateFee), 0, ',', '.') }}</div>
+                                    <div class="text-xs text-gray-500">Terlambat {{ abs($minutesLate) }} menit</div>
                                 </div>
                             @else
                                 <span class="text-sm text-gray-500">Rp 0</span>
                             @endif
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
+                        <td class="px-6 py-4 whitespace-nowrap text-center">
                             @if($attendance->time_in)
                                 @if($attendance->is_late)
                                     <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                        <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4l.01.01L7 10a1 1 0 102 0V6z" clip-rule="evenodd"></path>
+                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                         </svg>
                                         Terlambat
                                     </span>
@@ -225,7 +319,7 @@
                                 <span class="text-xs text-gray-400">-</span>
                             @endif
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
+                        <td class="px-6 py-4 whitespace-nowrap text-center">
                             @if(auth()->user()->hasRole(['admin', 'receptionist']))
                                 <button @click="editAttendanceId = {{ $attendance->id }}; editStatus = '{{ $attendance->is_late ? 'late' : 'ontime' }}'; showEditModal = true"
                                         class="inline-flex items-center px-3 py-1.5 bg-brand-maroon hover:bg-brand-maroon/90 text-white text-xs font-medium rounded-lg transition-colors">
@@ -292,10 +386,8 @@
                  x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                  class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                 
-                <form action="{{ route('attendance.deleteByMonth') }}" method="POST" 
-                      onsubmit="return confirm('Apakah Anda yakin ingin menghapus SEMUA data absensi untuk bulan yang dipilih? Tindakan ini tidak dapat dibatalkan!')">
+                <form action="{{ route('attendance.deleteByMonth') }}" method="POST" id="deleteForm">
                     @csrf
-                    
                     <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                         <div class="sm:flex sm:items-start">
                             <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
@@ -338,16 +430,17 @@
                     </div>
                     
                     <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-3">
-                        <button type="submit"
-                                class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm transition">
+                        <button type="button"
+                        @click="confirmDelete()"
+                            class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm transition">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                             </svg>
                             Hapus Semua Data
                         </button>
                         <button type="button"
-                                @click="showDeleteModal = false"
-                                class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-maroon sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition">
+                            @click="showDeleteModal = false"
+                            class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-maroon sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition">
                             Batal
                         </button>
                     </div>
@@ -434,8 +527,8 @@
                                                        class="h-4 w-4 text-yellow-600 focus:ring-yellow-500 border-gray-300">
                                                 <div class="ml-3 flex items-center">
                                                     <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                                        <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4l.01.01L7 10a1 1 0 102 0V6z" clip-rule="evenodd"></path>
+                                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                                         </svg>
                                                         Terlambat
                                                     </span>
@@ -478,3 +571,49 @@
     }
 </style>
 @endsection
+@push('scripts')
+<script>
+    // ... script flatpickr sebelumnya ...
+
+    function confirmDelete() {
+        // Ambil nilai bulan yang dipilih
+        const monthInput = document.getElementById('deleteMonth');
+        if (!monthInput.value) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Pilih Bulan',
+                text: 'Silakan pilih bulan yang ingin dihapus datanya terlebih dahulu.',
+                confirmButtonColor: '#9f1239' // brand-maroon
+            });
+            return;
+        }
+
+        Swal.fire({
+            title: 'Apakah Anda Yakin?',
+            text: "Semua data absensi pada bulan terpilih akan dihapus PERMANEN dan tidak bisa dikembalikan!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Ya, Hapus Semua!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Tampilkan loading saat proses hapus
+                Swal.fire({
+                    title: 'Memproses...',
+                    text: 'Sedang menghapus data...',
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                    willOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+                
+                // Submit form secara manual
+                document.getElementById('deleteForm').submit();
+            }
+        });
+    }
+</script>
+@endpush
