@@ -7,14 +7,26 @@ use App\Models\Attendance;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
+use App\Models\QrCode; // Add Import
+
 class AttendanceController extends Controller
 {
     public function checkin(Request $request)
     {
         $request->validate([
             'latitude' => 'required',
-            'longitude' => 'required'
+            'longitude' => 'required',
+            'code' => 'required', // QR Code is required
         ]);
+
+        // Validate QR Code
+        $qrCode = QrCode::where('code', $request->code)->first();
+        if (!$qrCode || !$qrCode->isValid()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Invalid or expired QR Code'
+            ], 400);
+        }
 
         $user = $request->user();
 
@@ -61,8 +73,18 @@ class AttendanceController extends Controller
     {
         $request->validate([
             'latitude' => 'required',
-            'longitude' => 'required'
+            'longitude' => 'required',
+            'code' => 'required', // QR Code is required
         ]);
+
+        // Validate QR Code
+        $qrCode = QrCode::where('code', $request->code)->first();
+        if (!$qrCode || !$qrCode->isValid()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Invalid or expired QR Code'
+            ], 400);
+        }
 
         // Get current time in WITA timezone
         $witaTime = Carbon::now('Asia/Makassar');
