@@ -12,7 +12,8 @@ class PermissionController extends Controller
     public function store(Request $request) 
     {
         $request->validate([
-            'permission' => 'required',
+            'permission' => 'required', // Reason/Keterangan
+            'permit_type' => 'required|in:sakit,izin,cuti,dlk', // Jenis Izin
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240', // 10MB max
         ]);
 
@@ -20,6 +21,7 @@ class PermissionController extends Controller
         $permission->user_id = $request->user()->id;
         $permission->date_permission = now()->format('Y-m-d');
         $permission->reason = $request->permission;
+        $permission->permit_type = $request->permit_type;
         $permission->is_approved = 'pending'; // default value
 
         if($request->hasFile('image'))

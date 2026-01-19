@@ -13,15 +13,17 @@ class CompanySeeder extends Seeder
      */
     public function run(): void
     {
-        Company::create([
-            'name' => 'PT. Manda',
-            'address' => 'Jl. Ahmad yani',
-            'email' => 'manda@gmail.com',
-            'latitude' => '-353.79925.0',
-            'longitude' => '106.8275.0',
-            'radius_km' => '2',
-            'time_in' => '08:00',
-            'time_out' => '17:00',
-        ]);
+        Company::updateOrCreate(
+            ['email' => 'marketing@kasaugrup.com'],
+            [
+                'name' => 'PT. Kasau Sinar Samudera',
+                'address' => 'Komp. Balikpapan Baru B5, Damai, Kecamatan Balikpapan Selatan, Kota Balikpapan, Kalimantan Timur 76133',
+                'latitude' => '-1.24646295687147',
+                'longitude' => '116.8596677215559',
+                'radius_km' => '1',
+                'time_in' => '08:00',
+                'time_out' => '17:00',
+            ]
+        );
     }
 }

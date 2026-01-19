@@ -51,17 +51,15 @@ class FortifyServiceProvider extends ServiceProvider
             return view('pages.auth.login');
         });
 
-        // Restrict Web Login to Admin only
+        // Allow all users to login to the web
         Fortify::authenticateUsing(function (Request $request) {
             $user = \App\Models\User::where('email', $request->email)->first();
 
             if ($user &&
                 \Illuminate\Support\Facades\Hash::check($request->password, $user->password)) {
                 
-                // Jika user adalah Admin, izinkan login
-                if ($user->hasRole('admin')) {
-                    return $user;
-                }
+                // Semua user bisa login ke website
+                return $user;
             }
         });
     }

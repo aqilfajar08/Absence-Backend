@@ -21,6 +21,13 @@ class Company extends Model
         'time_in',
         'time_out',
         'late_fee_per_minute',
-        'late_fee_interval_minutes'
+        'late_fee_interval_minutes',
+        'late_threshold_1',
+        'late_threshold_2',
+        'late_threshold_3',
+        'gph_late_1_percent',
+        'gph_late_2_percent',
+        'gph_late_3_percent',
+        'gph_late_4_percent',
     ];
 }

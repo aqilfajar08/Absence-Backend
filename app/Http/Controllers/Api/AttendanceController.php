@@ -7,28 +7,33 @@ use App\Models\Attendance;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
-use App\Models\QrCode; // Add Import
+use App\Models\Company;
+use App\Models\QrCode;
 
 class AttendanceController extends Controller
 {
     public function checkin(Request $request)
     {
+        $user = $request->user();
+        $isResepsionis = $user->hasRole('resepsionis');
+
         $request->validate([
             'latitude' => 'required',
             'longitude' => 'required',
-            'code' => 'required', // QR Code is required
+            'code' => $isResepsionis ? 'nullable' : 'required',
+            'image' => $isResepsionis ? 'required|image|max:2048' : 'nullable',
         ]);
 
-        // Validate QR Code
-        $qrCode = QrCode::where('code', $request->code)->first();
-        if (!$qrCode || !$qrCode->isValid()) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Invalid or expired QR Code'
-            ], 400);
+        // Validate QR Code if NOT Resepsionis
+        if (!$isResepsionis) {
+            $qrCode = QrCode::where('code', $request->code)->first();
+            if (!$qrCode || !$qrCode->isValid()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Invalid or expired QR Code'
+                ], 400);
+            }
         }
-
-        $user = $request->user();
 
         // Get current time in WITA timezone
         $witaTime = Carbon::now('Asia/Makassar');
@@ -51,6 +56,22 @@ class AttendanceController extends Controller
         $attendance->date_attendance = $witaTime->toDateString();
         $attendance->time_in = $witaTime->toTimeString();
         $attendance->latlon_in = $request->latitude . ',' . $request->longitude;
+        
+        // Save Image if Resepsionis
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $imageName = time() . '_in_' . $user->id . '.' . $image->extension();
+            $image->storeAs('attendance/in', $imageName, 'public');
+            $attendance->image_in = 'attendance/in/' . $imageName;
+        }
+
+        // Calculate Late Status
+        $company = Company::find(1);
+        if ($company) {
+            // Compare HH:mm
+            $attendance->is_late = $witaTime->format('H:i') > $company->time_in;
+        }
+        
         $attendance->save();
 
         return response()->json([
@@ -64,6 +85,7 @@ class AttendanceController extends Controller
                 'time_out' => $attendance->time_out_formatted,
                 'latlon_in' => $attendance->latlon_in,
                 'latlon_out' => $attendance->latlon_out,
+                'image_in' => $attendance->image_in, // Return image path
                 'wita_timezone' => 'Asia/Makassar',
             ],
         ], 201);
@@ -71,26 +93,32 @@ class AttendanceController extends Controller
 
     public function checkout(Request $request)
     {
+        $user = $request->user();
+        $isResepsionis = $user->hasRole('resepsionis');
+
         $request->validate([
             'latitude' => 'required',
             'longitude' => 'required',
-            'code' => 'required', // QR Code is required
+            'code' => $isResepsionis ? 'nullable' : 'required',
+            'image' => 'nullable',
         ]);
 
-        // Validate QR Code
-        $qrCode = QrCode::where('code', $request->code)->first();
-        if (!$qrCode || !$qrCode->isValid()) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Invalid or expired QR Code'
-            ], 400);
+        // Validate QR Code if NOT Resepsionis
+        if (!$isResepsionis) {
+            $qrCode = QrCode::where('code', $request->code)->first();
+            if (!$qrCode || !$qrCode->isValid()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Invalid or expired QR Code'
+                ], 400);
+            }
         }
 
         // Get current time in WITA timezone
         $witaTime = Carbon::now('Asia/Makassar');
         
         // GET User for checkout
-        $attendance = Attendance::where('user_id', $request->user()->id)
+        $attendance = Attendance::where('user_id', $user->id)
             ->where('date_attendance', $witaTime->toDateString())
             ->first();
             
@@ -103,6 +131,15 @@ class AttendanceController extends Controller
         
         $attendance->time_out = $witaTime->toTimeString();
         $attendance->latlon_out = $request->latitude . ',' . $request->longitude;
+
+        // Save Image if Resepsionis
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $imageName = time() . '_out_' . $user->id . '.' . $image->extension();
+            $image->storeAs('attendance/out', $imageName, 'public');
+            $attendance->image_out = 'attendance/out/' . $imageName;
+        }
+
         $attendance->save();
 
         return response()->json([
@@ -116,6 +153,7 @@ class AttendanceController extends Controller
                 'time_out' => $attendance->time_out_formatted,
                 'latlon_in' => $attendance->latlon_in,
                 'latlon_out' => $attendance->latlon_out,
+                'image_out' => $attendance->image_out, // Return image path
                 'wita_timezone' => 'Asia/Makassar',
             ],
         ], 200);
@@ -161,6 +199,7 @@ class AttendanceController extends Controller
     // index attendance
     public function index(Request $request) {
         $date = $request->input('date');
+        $month = $request->input('month');
 
         $currentUser = $request->user();
 
@@ -168,9 +207,12 @@ class AttendanceController extends Controller
 
         if ($date) {
             $query->where('date_attendance', $date);
+        } elseif ($month) {
+            // month input format: YYYY-MM
+            $query->where('date_attendance', 'like', "$month%");
         }
         
-        $attendance = $query->get();
+        $attendance = $query->orderBy('date_attendance', 'desc')->orderBy('time_in', 'desc')->get();
 
         // Format attendance data with WITA timezone
         $formattedAttendance = $attendance->map(function ($item) {

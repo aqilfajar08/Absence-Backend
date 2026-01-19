@@ -15,44 +15,55 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Get or create roles (should already exist from RolePermissionSeeder)
+        // Ensure Roles exist
         $adminRole = Role::firstOrCreate(['name' => 'admin']);
-        $receptionistRole = Role::firstOrCreate(['name' => 'receptionist']);
-        $employeeRole = Role::firstOrCreate(['name' => 'employee']);
-
-        // Create Admin User
-        $admin = User::factory()->create([
-            'name' => 'Admin User',
-            'email' => 'admin@gmail.com',
+        $staffRole = Role::firstOrCreate(['name' => 'staff']);
+        $resepsionisRole = Role::firstOrCreate(['name' => 'resepsionis']); // Restore Resepsionis Role
+        
+        // 1. Create Admin (Essential)
+        $admin = User::updateOrCreate([
+            'email' => 'admin@gmail.com'
+        ], [
+            'name' => 'Admin',
             'position' => 'Admin',
-            'department' => 'Management',
-            'password' => Hash::make('12345678'),
-        ]);
-        $admin->assignRole($adminRole);
-
-        // Create Receptionist User
-        $receptionist = User::factory()->create([
-            'name' => 'Receptionist User',
-            'email' => 'receptionist@gmail.com',
-            'position' => 'Receptionist',
-            'department' => 'Front Office',
-            'password' => Hash::make('12345678'),
-        ]);
-        $receptionist->assignRole($receptionistRole);
-
-        // Create Employee User
-        $employee = User::factory()->create([
-            'name' => 'Employee User',
-            'email' => 'employee@gmail.com',
-            'position' => 'Staff',
             'department' => 'IT',
-            'password' => Hash::make('12345678'),
+            'password' => Hash::make('admin@kasau'),
+            'gaji_pokok' => 0,
+            'tunjangan' => 0,
         ]);
-        $employee->assignRole($employeeRole);
+        $admin->syncRoles($adminRole);
 
-        $this->command->info('Created 3 test users:');
-        $this->command->info('- Admin: admin@gmail.com / 12345678');
-        $this->command->info('- Receptionist: receptionist@gmail.com / 12345678');
-        $this->command->info('- Employee: employee@gmail.com / 12345678');
+        // 2. Create Employees from List
+        $employees = [
+            ['name' => 'Rano M', 'email' => 'rano@gmail.com', 'dept' => 'Ops-Mtc', 'pass' => 'rano@kasau'],
+            ['name' => 'Rohana', 'email' => 'rohana@gmail.com', 'dept' => 'Ops-Acc', 'pass' => 'rohana@kasau'],
+            ['name' => 'Idris', 'email' => 'idris@gmail.com', 'dept' => 'OPS Support', 'pass' => 'idris@kasau'],
+            ['name' => 'Kory T', 'email' => 'kory@gmail.com', 'dept' => 'Sec', 'pass' => 'kory@kasau', 'role' => 'resepsionis'], // Changed to Resepsionis
+            ['name' => 'Pahira', 'email' => 'pahira@gmail.com', 'dept' => 'ACC', 'pass' => 'pahira@kasau'],
+            ['name' => 'Ratna', 'email' => 'ratna@gmail.com', 'dept' => 'Ops-Mtc', 'pass' => 'ratna@kasau'],
+            ['name' => 'Rahmah', 'email' => 'rahmah@gmail.com', 'dept' => 'Pro-log', 'pass' => 'rahmah@kasau'],
+            ['name' => 'Lutfi L', 'email' => 'lutfi@gmail.com', 'dept' => 'HR-GA-HS', 'pass' => 'lutfi@kasau'],
+            ['name' => 'Karina', 'email' => 'karina@gmail.com', 'dept' => 'Legal', 'pass' => 'karina@kasau'],
+            ['name' => 'Tetdi G', 'email' => 'tetdi@gmail.com', 'dept' => 'GA', 'pass' => 'tetdi@kasau'],
+            ['name' => 'Rusdiana', 'email' => 'rusdiana@gmail.com', 'dept' => 'FINANCE', 'pass' => 'rusdiana@kasau'],
+        ];
+
+        foreach ($employees as $emp) {
+            $user = User::updateOrCreate([
+                'email' => $emp['email']
+            ], [
+                'name' => $emp['name'],
+                'position' => isset($emp['role']) && $emp['role'] == 'resepsionis' ? 'Resepsionis' : 'Karyawan',
+                'department' => $emp['dept'],
+                'password' => Hash::make($emp['pass']),
+                'gaji_pokok' => 0,
+                'tunjangan' => 0,
+            ]);
+            
+            $roleName = $emp['role'] ?? 'staff';
+            $user->syncRoles($roleName);
+        }
+
+        $this->command->info('Seed completed: Admin + 11 Karyawan created.');
     }
 }

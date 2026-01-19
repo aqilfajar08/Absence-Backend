@@ -16,6 +16,9 @@ class Attendance extends Model
         'time_out',
         'latlon_in',
         'latlon_out',
+        'is_late',
+        'note',
+        'status',
     ];
 
     protected $casts = [

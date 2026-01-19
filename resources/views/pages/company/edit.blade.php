@@ -52,63 +52,95 @@
                     </h3>
                     <div class="bg-gray-50 rounded-xl p-5 border border-gray-200">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                            <div>
+                            {{-- Tepat Waktu & Jam Pulang --}}
+                            {{-- Jam Masuk --}}
+                            <div class="bg-white p-4 rounded-lg border border-gray-200">
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">Jam Masuk Kantor</label>
-                                <input type="time" name="time_in" value="{{ $company->time_in }}" 
+                                <input type="time" name="time_in" value="{{ $company->time_in ?? '08:00' }}" 
                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-maroon/20 focus:border-brand-maroon transition duration-200">
-                                <p class="mt-1 text-xs text-gray-500">Karyawan absen setelah jam ini dianggap terlambat.</p>
+                                <p class="mt-2 text-xs text-green-600 font-medium">Gaji Diterima: 100%</p>
                             </div>
-                            <div>
+
+                            {{-- Jam Pulang --}}
+                            <div class="bg-white p-4 rounded-lg border border-gray-200">
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">Jam Pulang Kantor</label>
-                                <input type="time" name="time_out" value="{{ $company->time_out }}" 
+                                <input type="time" name="time_out" value="{{ $company->time_out ?? '17:00' }}" 
                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-maroon/20 focus:border-brand-maroon transition duration-200">
+                                <p class="mt-2 text-xs text-gray-500">Batas jam absen pulang.</p>
+                            </div>
+
+                            {{-- Terlambat 1 --}}
+                            <div class="bg-white p-4 rounded-lg border border-gray-200">
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Batas Terlambat 1</label>
+                                <div class="flex gap-3">
+                                    <div class="w-2/3">
+                                        <input type="time" name="late_threshold_1" value="{{ $company->late_threshold_1 ?? '08:30' }}" 
+                                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-maroon/20 focus:border-brand-maroon transition duration-200">
+                                    </div>
+                                    <div class="w-1/3 relative">
+                                        <input type="number" name="gph_late_1_percent" value="{{ $company->gph_late_1_percent ?? 75 }}" min="0" max="100"
+                                            class="w-full pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-maroon/20 focus:border-brand-maroon transition duration-200">
+                                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">%</span>
+                                    </div>
+                                </div>
+                                <p class="mt-2 text-xs text-gray-500">Persentase GPH diterima jika lewat jam ini.</p>
+                            </div>
+
+                            {{-- Terlambat 2 --}}
+                            <div class="bg-white p-4 rounded-lg border border-gray-200">
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Batas Terlambat 2</label>
+                                <div class="flex gap-3">
+                                    <div class="w-2/3">
+                                        <input type="time" name="late_threshold_2" value="{{ $company->late_threshold_2 ?? '09:00' }}" 
+                                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-maroon/20 focus:border-brand-maroon transition duration-200">
+                                    </div>
+                                    <div class="w-1/3 relative">
+                                        <input type="number" name="gph_late_2_percent" value="{{ $company->gph_late_2_percent ?? 70 }}" min="0" max="100"
+                                            class="w-full pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-maroon/20 focus:border-brand-maroon transition duration-200">
+                                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">%</span>
+                                    </div>
+                                </div>
+                                <p class="mt-2 text-xs text-gray-500">Persentase GPH diterima jika lewat jam ini.</p>
+                            </div>
+
+                            {{-- Terlambat 3 --}}
+                            <div class="bg-white p-4 rounded-lg border border-gray-200">
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Batas Terlambat 3</label>
+                                <div class="flex gap-3">
+                                    <div class="w-2/3">
+                                        <input type="time" name="late_threshold_3" value="{{ $company->late_threshold_3 ?? '12:00' }}" 
+                                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-maroon/20 focus:border-brand-maroon transition duration-200">
+                                    </div>
+                                    <div class="w-1/3 relative">
+                                        <input type="number" name="gph_late_3_percent" value="{{ $company->gph_late_3_percent ?? 65 }}" min="0" max="100"
+                                            class="w-full pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-maroon/20 focus:border-brand-maroon transition duration-200">
+                                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">%</span>
+                                    </div>
+                                </div>
+                                <p class="mt-2 text-xs text-gray-500">Persentase GPH diterima jika lewat jam ini.</p>
+                            </div>
+
+                            {{-- Setengah Hari --}}
+                            <div class="bg-white p-4 rounded-lg border border-gray-200 md:col-span-2">
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Setengah Hari (Lewat Batas Terlambat 3)</label>
+                                <div class="flex gap-3 items-center">
+                                    <span class="text-sm text-gray-600">Otomatis berlaku jika lewat batas 3.</span>
+                                    <div class="w-32 relative">
+                                        <input type="number" name="gph_late_4_percent" value="{{ $company->gph_late_4_percent ?? 0 }}" min="0" max="100"
+                                            class="w-full pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-maroon/20 focus:border-brand-maroon transition duration-200">
+                                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">%</span>
+                                    </div>
+                                    <span class="text-sm text-gray-600">GPH Diterima</span>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="border-t border-gray-200 pt-6">
+                        {{-- <div class="border-t border-gray-200 pt-6">
                             <h4 class="text-sm font-semibold text-gray-900 mb-4">Kebijakan Denda Keterlambatan</h4>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Tarif Denda (Rp)</label>
-                                    <div class="relative">
-                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <span class="text-gray-500 sm:text-sm">Rp</span>
-                                        </div>
-                                        <input type="number" name="late_fee_per_minute" value="{{ $company->late_fee_per_minute }}" 
-                                               class="w-full pl-10 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-maroon/20 focus:border-brand-maroon transition duration-200">
-                                    </div>
-                                    <p class="mt-1 text-xs text-gray-500">Nominal denda yang dikenakan.</p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Hitung Setiap (Menit)</label>
-                                    <div class="relative">
-                                        <input type="number" name="late_fee_interval_minutes" value="{{ $company->late_fee_interval_minutes ?? 1 }}" min="1"
-                                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-maroon/20 focus:border-brand-maroon transition duration-200">
-                                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                            <span class="text-gray-500 sm:text-sm">Menit</span>
-                                        </div>
-                                    </div>
-                                    <p class="mt-1 text-xs text-gray-500">Contoh: Jika 15 menit, maka denda dihitung per kelipatan 15 menit keterlambatan.</p>
-                                </div>
-                            </div>
-                            <div class="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                                <div class="flex">
-                                    <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
-                                    </svg>
-                                    <div class="ml-3">
-                                        <h3 class="text-sm font-medium text-yellow-800">Simulasi Perhitungan</h3>
-                                        <div class="mt-2 text-sm text-yellow-700">
-                                            <p>Jika tarif <strong>Rp {{ number_format($company->late_fee_per_minute ?? 0, 0, ',', '.') }}</strong> per <strong>{{ $company->late_fee_interval_minutes ?? 1 }} menit</strong>:</p>
-                                            <ul class="list-disc pl-5 mt-1 space-y-1">
-                                                <li>Terlambat {{ $company->late_fee_interval_minutes ?? 1 }} menit = Rp {{ number_format($company->late_fee_per_minute ?? 0, 0, ',', '.') }}</li>
-                                                <li>Terlambat {{ ($company->late_fee_interval_minutes ?? 1) * 2 }} menit = Rp {{ number_format(($company->late_fee_per_minute ?? 0) * 2, 0, ',', '.') }}</li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                            <p class="text-sm text-gray-600">
+                                Kebijakan denda saat ini menggunakan sistem persentase potongan Gaji Pokok Harian (GPH) berdasarkan jam keterlambatan.
+                            </p>
+                        </div> --}}
                     </div>
                 </div>
             </div>

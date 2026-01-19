@@ -12,6 +12,7 @@ use Illuminate\Support\Str;
 class AuthController extends Controller
 {
     public function login(Request $request) {
+        \Illuminate\Support\Facades\Log::info('Login Hit for ' . $request->email);
         $request->validate([
             'email' => 'required|email',
             'password' => 'required|string|min:8',
@@ -32,6 +33,8 @@ class AuthController extends Controller
         }
 
         $token = $user->createToken('authToken')->plainTextToken;
+
+        $user->load('roles');
 
         return response()->json([
             'message' => 'successful',
@@ -115,6 +118,7 @@ class AuthController extends Controller
     // get user profile
     public function getProfile(Request $request) {
         $user = $request->user();
+        $user->load('roles');
         
         return response()->json([
             'status' => 'success',

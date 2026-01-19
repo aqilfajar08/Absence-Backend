@@ -19,13 +19,26 @@
 <div x-data="{ 
     showDeleteModal: false,
     showEditModal: false,
+    showManualModal: false,
+    activeTab: 'present', // 'present' or 'absent'
     selectedMonth: '',
     searchQuery: '{{ $reqSearch }}',
     filterType: '{{ $currentFilterType }}',
     startDate: '{{ $reqStartDate }}',
     endDate: '{{ $reqEndDate }}',
+    
+    // Edit Existing
     editAttendanceId: null,
     editStatus: '',
+    editNote: '',
+    
+    // Manual Input (Absent User)
+    manualUserId: null,
+    manualUserName: '',
+    manualDate: '',
+    manualStatus: 'sick',
+    manualNote: '',
+
     updateFilter() {
         if (this.filterType === 'today') {
             const today = new Date().toISOString().split('T')[0];
@@ -38,6 +51,15 @@
             this.searchQuery = '';
             this.$nextTick(() => this.$refs.filterForm.submit());
         }
+    },
+    
+    openManualModal(userId, userName, date) {
+        this.manualUserId = userId;
+        this.manualUserName = userName;
+        this.manualDate = date;
+        this.manualStatus = 'alpha'; // default
+        this.manualNote = '';
+        this.showManualModal = true;
     }
 }">
     {{-- Page Header Card --}}
@@ -215,16 +237,40 @@
             </form>
         </div>
 
+        {{-- Tabs for Single Day View --}}
+        @isset($isSingleDay)
+            @if($isSingleDay)
+            <div class="border-b border-gray-200 bg-white px-6">
+                <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                    <button @click="activeTab = 'present'"
+                            :class="activeTab === 'present' ? 'border-brand-maroon text-brand-maroon' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                            class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Hadir ({{ $attendances->total() }})
+                    </button>
+
+                    <button @click="activeTab = 'absent'"
+                            :class="activeTab === 'absent' ? 'border-brand-maroon text-brand-maroon' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                            class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Belum Absen ({{ $absentUsers->count() }})
+                    </button>
+                </nav>
+            </div>
+            @endif
+        @endisset
+
         {{-- Table --}}
         <div class="overflow-x-auto">
-            <table class="w-full">
+            {{-- Table: Present Users --}}
+            <table class="w-full" x-show="activeTab === 'present'">
                 <thead class="bg-gray-50 border-b border-gray-200">
                     <tr>
                         <th class="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Nama Karyawan</th>
                         <th class="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Tanggal</th>
                         <th class="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Jam Datang</th>
-                        <th class="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Denda</th>
                         <th class="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Keterangan</th>
                         <th class="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Aksi</th>
                     </tr>
                 </thead>
@@ -234,9 +280,13 @@
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center">
                                     <div class="h-10 w-10 flex-shrink-0">
-                                        <div class="h-10 w-10 rounded-full bg-brand-gold/20 flex items-center justify-center text-brand-gold font-bold text-sm">
-                                            {{ strtoupper(substr($attendance->user->name, 0, 2)) }}
-                                        </div>
+                                        @if($attendance->user->image_url)
+                                            <img src="{{ asset('storage/' . $attendance->user->image_url) }}" alt="{{ $attendance->user->name }}" class="h-10 w-10 rounded-full object-cover">
+                                        @else
+                                            <div class="h-10 w-10 rounded-full bg-brand-gold/20 flex items-center justify-center text-brand-gold font-bold text-sm">
+                                                {{ strtoupper(substr($attendance->user->name, 0, 2)) }}
+                                            </div>
+                                        @endif
                                     </div>
                                 <div class="ml-4">
                                     <div class="text-sm font-medium text-gray-900">{{ $attendance->user->name }}</div>
@@ -245,8 +295,8 @@
                             </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-center">
-                            <div class="text-sm text-gray-900">{{ \Carbon\Carbon::parse($attendance->date_attendance)->format('d M Y') }}</div>
-                            <div class="text-xs text-gray-500">{{ \Carbon\Carbon::parse($attendance->date_attendance)->format('l') }}</div>
+                            <div class="text-sm text-gray-900">{{ \Carbon\Carbon::parse($attendance->date_attendance)->locale('id')->translatedFormat('d M Y') }}</div>
+                            <div class="text-xs text-gray-500">{{ \Carbon\Carbon::parse($attendance->date_attendance)->locale('id')->translatedFormat('l') }}</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-center">
                             @if($attendance->time_in)
@@ -258,70 +308,116 @@
                             @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-center">
-                            @if($attendance->time_in && $attendance->is_late)
-                                @php
-                                    $lateFee = 0;
-                                    $minutesLate = 0;
-                                    if($attendance->is_late && $attendance->time_in) {
+                            @php
+                                $statusLabel = '-';
+                                $badgeClass = 'bg-gray-100 text-gray-800';
+                                $iconSvg = '';
+                                
+                                // Helper SVG
+                                $checkIcon = '<svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>';
+                                $clockIcon = '<svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+                                $infoIcon = '<svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+                                $xIcon = '<svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>';
+
+                                if ($attendance->time_in) {
+                                    // Check explicit lateness flag first
+                                    if (!$attendance->is_late) {
+                                        $statusLabel = 'Tepat Waktu';
+                                        $badgeClass = 'bg-green-100 text-green-800';
+                                        $iconSvg = $checkIcon;
+                                    } else {
+                                        // It is marked as late, calculate degree based on time
                                         $timeIn = \Carbon\Carbon::parse($attendance->time_in);
-                                        $cutoffTime = \Carbon\Carbon::parse($company->time_in ?? '09:00:00');
                                         
-                                        // Samakan tanggal agar hanya membandingkan JAM
-                                        $cutoffTime->setDate($timeIn->year, $timeIn->month, $timeIn->day);
+                                        $tTimeIn = \Carbon\Carbon::parse($company->time_in ?? '08:00:00')->setDate($timeIn->year, $timeIn->month, $timeIn->day)->addSeconds(59);
+                                        $tLate1  = \Carbon\Carbon::parse($company->late_threshold_1 ?? '08:30:00')->setDate($timeIn->year, $timeIn->month, $timeIn->day)->addSeconds(59);
+                                        $tLate2  = \Carbon\Carbon::parse($company->late_threshold_2 ?? '09:00:00')->setDate($timeIn->year, $timeIn->month, $timeIn->day)->addSeconds(59);
+                                        $tLate3  = \Carbon\Carbon::parse($company->late_threshold_3 ?? '12:00:00')->setDate($timeIn->year, $timeIn->month, $timeIn->day)->addSeconds(59);
 
-                                        // Jika Absen LEBIH DARI Jam Masuk -> BENAR TERLAMBAT
-                                        if ($timeIn->gt($cutoffTime)) {
-                                            $minutesLate = ceil($timeIn->diffInMinutes($cutoffTime));
+                                        if ($timeIn->gt($tTimeIn) && $timeIn->lte($tLate1)) {
+                                            $statusLabel = 'Terlambat 1';
+                                            $badgeClass = 'bg-blue-100 text-blue-800';
+                                            $iconSvg = $clockIcon;
+                                        } elseif ($timeIn->gt($tLate1) && $timeIn->lte($tLate2)) {
+                                            $statusLabel = 'Terlambat 2';
+                                            $badgeClass = 'bg-yellow-100 text-yellow-800';
+                                            $iconSvg = $clockIcon;
+                                        } elseif ($timeIn->gt($tLate2) && $timeIn->lte($tLate3)) {
+                                            $statusLabel = 'Terlambat 3';
+                                            $badgeClass = 'bg-orange-200 text-orange-900';
+                                            $iconSvg = $clockIcon;
+                                        } elseif ($timeIn->gt($tLate3)) {
+                                            $statusLabel = 'Setengah Hari';
+                                            $badgeClass = 'bg-red-100 text-red-800';
+                                            $iconSvg = $clockIcon;
                                         } else {
-                                            // Jika Absen <= Jam Masuk TAPI status 'Late' (Data aneh/manual)
-                                            // Kita anggap 0 menit saja biar ga minus
-                                            $minutesLate = 0;
-                                        }
-
-                                        // --- UPDATE TERAKHIR: PAKSA ABSOLUT BIAR GAK MINUS APAPUN YANG TERJADI ---
-                                        $minutesLate = abs($minutesLate); 
-
-                                        if ($minutesLate > 0) {
-                                            $interval = max(1, $company->late_fee_interval_minutes ?? 1); // Hindari division by zero
-                                            $feePerInterval = $company->late_fee_per_minute ?? 1000;
-                                            
-                                            $intervals = ceil($minutesLate / $interval);
-                                            $lateFee = $intervals * $feePerInterval;
+                                            $statusLabel = 'Terlambat';
+                                            $badgeClass = 'bg-gray-100 text-gray-800';
+                                            $iconSvg = $clockIcon;
                                         }
                                     }
-                                @endphp
-                                <div class="text-sm">
-                                    <div class="font-semibold text-red-600">Rp {{ number_format(abs($lateFee), 0, ',', '.') }}</div>
-                                    <div class="text-xs text-gray-500">Terlambat {{ abs($minutesLate) }} menit</div>
-                                </div>
-                            @else
-                                <span class="text-sm text-gray-500">Rp 0</span>
-                            @endif
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-center">
-                            @if($attendance->time_in)
-                                @if($attendance->is_late)
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                        </svg>
-                                        Terlambat
-                                    </span>
-                                @else
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                        <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                        </svg>
-                                        Tepat Waktu
-                                    </span>
-                                @endif
+                                } else {
+                                    // Status Only (No time_in)
+                                    $redBadge = 'bg-red-600 text-white';
+
+                                    if ($attendance->status == 'sick') {
+                                        $statusLabel = 'Sakit';
+                                        $badgeClass = $redBadge;
+                                        $iconSvg = $infoIcon;
+                                    } elseif ($attendance->status == 'permission') {
+                                        $statusLabel = 'Izin';
+                                        $badgeClass = $redBadge;
+                                        $iconSvg = $infoIcon;
+                                    } elseif ($attendance->status == 'alpha') {
+                                        $statusLabel = 'Alpha';
+                                        $badgeClass = $redBadge;
+                                        $iconSvg = $xIcon;
+                                    } elseif ($attendance->status == 'out_of_town') {
+                                        $statusLabel = 'Dinas Luar Kota';
+                                        $badgeClass = $redBadge;
+                                        $iconSvg = $infoIcon;
+                                    } elseif ($attendance->status == 'leave') {
+                                        $statusLabel = 'Cuti';
+                                        $badgeClass = $redBadge;
+                                        $iconSvg = $infoIcon;
+                                    }
+                                }
+                            @endphp
+
+                            @if($statusLabel != '-')
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium {{ $badgeClass }}">
+                                    {!! $iconSvg !!}
+                                    {{ $statusLabel }}
+                                </span>
                             @else
                                 <span class="text-xs text-gray-400">-</span>
                             @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-center">
-                            @if(auth()->user()->hasRole(['admin', 'receptionist']))
-                                <button @click="editAttendanceId = {{ $attendance->id }}; editStatus = '{{ $attendance->is_late ? 'late' : 'ontime' }}'; showEditModal = true"
+                            @if($attendance->note)
+                                <div class="max-w-xs mx-auto">
+                                    <div class="inline-flex items-start gap-1.5 text-xs text-gray-600 bg-gray-50 px-3 py-2 rounded-lg border border-gray-200">
+                                        <svg class="w-3.5 h-3.5 text-gray-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path>
+                                        </svg>
+                                        <span class="text-left">{{ Str::limit($attendance->note, 50) }}</span>
+                                    </div>
+                                </div>
+                            @else
+                                <span class="text-xs text-gray-400 italic">-</span>
+                            @endif
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center">
+                            @if(auth()->user()->hasRole(['admin', 'receptionist']) && $attendance->time_in)
+                                @php
+                                    // Determine detailed status for edit modal
+                                    $editStatusVal = $attendance->status ?? ($attendance->is_late ? 'late' : 'ontime');
+                                    // Fix for older records or default 'present' without is_late details
+                                    if ($editStatusVal == 'present') {
+                                        $editStatusVal = $attendance->is_late ? 'late' : 'ontime';
+                                    }
+                                @endphp
+                                <button @click="editAttendanceId = {{ $attendance->id }}; editStatus = '{{ $editStatusVal }}'; editNote = '{{ addslashes($attendance->note ?? '') }}'; showEditModal = true"
                                         class="inline-flex items-center px-3 py-1.5 bg-brand-maroon hover:bg-brand-maroon/90 text-white text-xs font-medium rounded-lg transition-colors">
                                     <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
@@ -347,13 +443,77 @@
                 </tbody>
             </table>
 
+            {{-- Table: Absent Users (Only visible in Single Day view) --}}
+            @isset($isSingleDay)
+            @if($isSingleDay)
+            <table class="w-full" x-show="activeTab === 'absent'" style="display: none;">
+                <thead class="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                        <th class="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Nama Karyawan</th>
+                        <th class="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    @forelse ($absentUsers as $absentUser)
+                    <tr class="hover:bg-gray-50 transition">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="h-10 w-10 flex-shrink-0">
+                                    @if($absentUser->image_url)
+                                        <img src="{{ asset('storage/' . $absentUser->image_url) }}" alt="{{ $absentUser->name }}" class="h-10 w-10 rounded-full object-cover">
+                                    @else
+                                        <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-bold text-sm">
+                                            {{ strtoupper(substr($absentUser->name, 0, 2)) }}
+                                        </div>
+                                    @endif
+                                </div>
+                                <div class="ml-4">
+                                    <div class="text-sm font-medium text-gray-900">{{ $absentUser->name }}</div>
+                                    <div class="text-xs text-gray-500">{{ $absentUser->email }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center">
+                            {{-- Visual Default Status --}}
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                Alpa
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center">
+                            @if(auth()->user()->hasRole(['admin', 'receptionist']))
+                                <button @click="openManualModal({{ $absentUser->id }}, '{{ addslashes($absentUser->name) }}', '{{ $targetDate }}')"
+                                        class="inline-flex items-center px-3 py-1.5 bg-brand-maroon hover:bg-brand-maroon/90 text-white text-xs font-medium rounded-lg transition-colors">
+                                    <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                    </svg>
+                                    Edit
+                                </button>
+                            @else
+                                -
+                            @endif
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="3" class="px-6 py-12 text-center text-gray-500">
+                            Semua karyawan sudah absen hari ini.
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+            @endif
+            @endisset
+
         {{-- Pagination --}}
         @if($attendances->hasPages())
-        <div class="px-6 py-4 border-t border-gray-200 bg-white">
+        <div class="px-6 py-4 border-t border-gray-200 bg-white" x-show="activeTab === 'present'">
             {{ $attendances->links('vendor.pagination.custom') }}
         </div>
         @endif
     </div>
+</div>
 
     {{-- Delete Modal --}}
     <div x-show="showDeleteModal"
@@ -537,9 +697,18 @@
                                         </div>
                                     </div>
                                     
-                                    <p class="text-sm text-gray-500 mt-3">
-                                        Ubah status kehadiran karyawan sesuai dengan kondisi aktual.
-                                    </p>
+                                    {{-- Keterangan / Alasan --}}
+                                    <div class="mt-4">
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                                            Keterangan / Alasan
+                                        </label>
+                                        <textarea name="note" 
+                                                  x-model="editNote"
+                                                  rows="3" 
+                                                  class="w-full rounded-lg border-gray-300 shadow-sm focus:border-brand-maroon focus:ring focus:ring-brand-maroon/20 text-sm"
+                                                  placeholder="Contoh: Izin terlambat karena ada tugas di lapangan..."></textarea>
+                                        <p class="text-xs text-gray-500 mt-1">Tambahkan keterangan jika diperlukan, misalnya alasan keterlambatan.</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -561,6 +730,116 @@
                     </div>
                 </form>
             </div>
+        </div>
+    </div>
+
+    {{-- Manual Attendance Modal --}}
+    <div x-show="showManualModal"
+         x-cloak
+         class="fixed inset-0 z-50 overflow-y-auto"
+         aria-labelledby="manual-modal-title" 
+         role="dialog" 
+         aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+             <div x-show="showManualModal"
+                 @click="showManualModal = false"
+                 class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+            
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+
+            <div x-show="showManualModal"
+                 x-transition:enter="ease-out duration-300"
+                 x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                 x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                 x-transition:leave="ease-in duration-200"
+                 x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                 x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                 class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                
+                 <form action="{{ route('attendance.storeManual') }}" method="POST">
+                    @csrf
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <div class="sm:flex sm:items-start">
+                            <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-brand-maroon/10 sm:mx-0 sm:h-10 sm:w-10">
+                                <svg class="h-6 w-6 text-brand-maroon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                </svg>
+                            </div>
+                            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left flex-1">
+                                <h3 class="text-lg leading-6 font-medium text-gray-900" id="manual-modal-title">
+                                    Catat Kehadiran (Manual)
+                                </h3>
+                                <div class="mt-2 mb-4">
+                                    <p class="text-sm text-gray-500">Mencatat status untuk <span class="font-bold text-gray-800" x-text="manualUserName"></span> pada tanggal <span class="font-bold" x-text="manualDate"></span>.</p>
+                                </div>
+                                
+                                <input type="hidden" name="user_id" x-model="manualUserId">
+                                <input type="hidden" name="date_attendance" x-model="manualDate">
+
+                                <div class="space-y-3">
+                                    <label class="block text-sm font-medium text-gray-700">Pilih Status</label>
+                                    
+                                     {{-- Dinas Luar Kota --}}
+                                    <label class="relative flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition"
+                                            :class="manualStatus === 'out_of_town' ? 'border-purple-500 bg-purple-50' : 'border-gray-300'">
+                                        <input type="radio" name="status" value="out_of_town" x-model="manualStatus" class="h-4 w-4 text-purple-600 border-gray-300">
+                                        <div class="ml-3">
+                                            <span class="block text-sm font-medium text-gray-900">Dinas Luar Kota</span>
+                                        </div>
+                                    </label>
+                                    
+                                    {{-- Izin --}}
+                                    <label class="relative flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition"
+                                            :class="manualStatus === 'permission' ? 'border-yellow-500 bg-yellow-50' : 'border-gray-300'">
+                                        <input type="radio" name="status" value="permission" x-model="manualStatus" class="h-4 w-4 text-yellow-600 border-gray-300">
+                                        <div class="ml-3">
+                                            <span class="block text-sm font-medium text-gray-900">Izin</span>
+                                        </div>
+                                    </label>
+                                    
+                                    {{-- Sakit --}}
+                                    <label class="relative flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition"
+                                            :class="manualStatus === 'sick' ? 'border-blue-500 bg-blue-50' : 'border-gray-300'">
+                                        <input type="radio" name="status" value="sick" x-model="manualStatus" class="h-4 w-4 text-blue-600 border-gray-300">
+                                        <div class="ml-3">
+                                            <span class="block text-sm font-medium text-gray-900">Sakit</span>
+                                        </div>
+                                    </label>
+
+                                    {{-- Cuti --}}
+                                    <label class="relative flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition"
+                                            :class="manualStatus === 'leave' ? 'border-teal-500 bg-teal-50' : 'border-gray-300'">
+                                        <input type="radio" name="status" value="leave" x-model="manualStatus" class="h-4 w-4 text-teal-600 border-gray-300">
+                                        <div class="ml-3">
+                                            <span class="block text-sm font-medium text-gray-900">Cuti</span>
+                                        </div>
+                                    </label>
+
+                                    {{-- Alpa  --}}
+                                    <label class="relative flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition"
+                                            :class="manualStatus === 'alpha' ? 'border-red-500 bg-red-50' : 'border-gray-300'">
+                                        <input type="radio" name="status" value="alpha" x-model="manualStatus" class="h-4 w-4 text-red-600 border-gray-300">
+                                        <div class="ml-3">
+                                            <span class="block text-sm font-medium text-gray-900">Alpa</span>
+                                        </div>
+                                    </label>
+                                </div>
+                                
+                                <div class="mt-4">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Catatan Tambahan</label>
+                                    <textarea name="note" x-model="manualNote" rows="2" class="w-full rounded-lg border-gray-300 text-sm focus:ring-brand-maroon focus:border-brand-maroon" placeholder="Opsional..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-3">
+                        <button type="submit" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 bg-brand-maroon text-base font-medium text-white hover:bg-brand-maroon/90 sm:ml-3 sm:w-auto sm:text-sm">Simpan</button>
+                        <button type="button" @click="showManualModal = false" class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">Batal</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
         </div>
     </div>
 </div>

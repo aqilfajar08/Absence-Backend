@@ -32,16 +32,8 @@ class AttendanceExport implements WithMultipleSheets
         $current = $startDate->copy();
         
         while ($current->lte($endDate)) {
-            // 1. Sheet Rekap Gaji (yang tadi Anda buat)
-            // Ubah judul di MonthlyAttendanceSheet.php jadi 'Rekap ...' biar jelas
+            // 1. Sheet Rekap Gaji
             $sheets[] = new MonthlyAttendanceSheet(
-                $current->month, 
-                $current->year, 
-                $this->request->search
-            );
-            
-            // 2. Sheet Detail Harian (yang baru kita buat)
-            $sheets[] = new \App\Exports\Sheets\DailyAttendanceSheet(
                 $current->month, 
                 $current->year, 
                 $this->request->search

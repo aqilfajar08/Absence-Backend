@@ -74,9 +74,13 @@
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center">
                                 <div class="h-10 w-10 flex-shrink-0">
-                                    <div class="h-10 w-10 rounded-full bg-brand-gold/20 flex items-center justify-center text-brand-gold font-bold text-sm">
-                                        {{ strtoupper(substr($user->name, 0, 2)) }}
-                                    </div>
+                                    @if($user->image_url)
+                                        <img src="{{ asset('storage/' . $user->image_url) }}" alt="{{ $user->name }}" class="h-10 w-10 rounded-full object-cover">
+                                    @else
+                                        <div class="h-10 w-10 rounded-full bg-brand-gold/20 flex items-center justify-center text-brand-gold font-bold text-sm">
+                                            {{ strtoupper(substr($user->name, 0, 2)) }}
+                                        </div>
+                                    @endif
                                 </div>
                                 <div class="ml-4">
                                     <div class="text-sm font-medium text-gray-900">{{ $user->name }}</div>
@@ -129,9 +133,11 @@
         </div>
         
         {{-- Pagination --}}
-        <div class="px-6 py-4 border-t border-gray-200">
-            {{ $users->links() }}
+        @if($users->hasPages())
+        <div class="px-6 py-4 border-t border-gray-200 bg-white">
+            {{ $users->links('vendor.pagination.custom') }}
         </div>
+        @endif
     </div>
 </div>
 

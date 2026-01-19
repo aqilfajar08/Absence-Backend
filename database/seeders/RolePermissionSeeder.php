@@ -52,13 +52,17 @@ class RolePermissionSeeder extends Seeder
 
         // Create roles and assign permissions
 
-        // 1. Admin Role - Full access
+        // 1. Admin Role - Full access (Super Admin)
         $adminRole = Role::firstOrCreate(['name' => 'admin']);
         $adminRole->givePermissionTo(Permission::all());
 
-        // 2. Receptionist Role - Can generate QR codes and view attendance
-        $receptionistRole = Role::firstOrCreate(['name' => 'receptionist']);
-        $receptionistRole->givePermissionTo([
+        // 2. Manager Role - Full access
+        $managerRole = Role::firstOrCreate(['name' => 'manager']);
+        $managerRole->givePermissionTo(Permission::all());
+
+        // 2. Resepsionis Role - Can generate QR codes and view attendance
+        $resepsionisRole = Role::firstOrCreate(['name' => 'resepsionis']);
+        $resepsionisRole->givePermissionTo([
             'generate qr code',
             'deactivate qr code',
             'view qr code',
@@ -66,9 +70,17 @@ class RolePermissionSeeder extends Seeder
             'view users',
         ]);
 
-        // 3. Employee Role - Basic access
-        $employeeRole = Role::firstOrCreate(['name' => 'employee']);
-        $employeeRole->givePermissionTo([
+        // 3. Staff Role - Basic access
+        $staffRole = Role::firstOrCreate(['name' => 'staff']);
+        $staffRole->givePermissionTo([
+            'view attendance',
+            'create attendance',
+            'view permissions',
+        ]);
+
+        // 4. Magang Role - Basic access (same as Staff for now)
+        $magangRole = Role::firstOrCreate(['name' => 'magang']);
+        $magangRole->givePermissionTo([
             'view attendance',
             'create attendance',
             'view permissions',

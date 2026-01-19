@@ -68,21 +68,46 @@ class DailyAttendanceSheet implements FromCollection, WithHeadings, WithMapping,
     {
         $keterangan = '-';
         $denda = 0;
+        $statusLabel = '-';
 
-        if ($attendance->is_late && $attendance->time_in) {
+        if ($attendance->time_in) {
             $timeIn = Carbon::parse($attendance->time_in);
-            $cutoffTime = Carbon::parse($this->company->time_in ?? '09:00:00');
+            
+            // Thresholds (Matching Web Logic)
+            // Use time_in from company or default 08:00:00
+            $tTimeIn = Carbon::parse($this->company->time_in ?? '08:00:00')->setDateFrom($timeIn)->addSeconds(59);
+            $tLate1  = Carbon::parse($this->company->late_threshold_1 ?? '08:30:00')->setDateFrom($timeIn)->addSeconds(59);
+            $tLate2  = Carbon::parse($this->company->late_threshold_2 ?? '09:00:00')->setDateFrom($timeIn)->addSeconds(59);
+            $tLate3  = Carbon::parse($this->company->late_threshold_3 ?? '12:00:00')->setDateFrom($timeIn)->addSeconds(59);
 
-            if ($timeIn->gt($cutoffTime)) {
-                $minutesLate = abs($timeIn->diffInMinutes($cutoffTime));
-                $keterangan = "Terlambat $minutesLate menit";
-                
-                $lateFeePerInterval = $this->company->late_fee_per_minute ?? 1000;
-                $interval = $this->company->late_fee_interval_minutes ?? 1;
-                $blocks = ceil($minutesLate / $interval);
-                $denda = $blocks * $lateFeePerInterval;
+            if ($timeIn->lte($tTimeIn)) {
+                $statusLabel = 'Tepat Waktu';
+            } elseif ($timeIn->gt($tTimeIn) && $timeIn->lte($tLate1)) {
+                 $statusLabel = 'Terlambat 1';
+            } elseif ($timeIn->gt($tLate1) && $timeIn->lte($tLate2)) {
+                 $statusLabel = 'Terlambat 2';
+            } elseif ($timeIn->gt($tLate2) && $timeIn->lte($tLate3)) {
+                 $statusLabel = 'Terlambat 3';
             } else {
-                $keterangan = "Terlambat (Manual)";
+                 $statusLabel = 'Setengah Hari';
+            }
+            
+            // Calculate Keterangan (Minutes Late) and Denda if Late
+            if ($statusLabel !== 'Tepat Waktu') {
+                 // Recalculate base time without tolerance for minute calculation
+                 $baseTimeIn = Carbon::parse($this->company->time_in ?? '08:00:00')->setDateFrom($timeIn);
+                 
+                 if ($timeIn->gt($baseTimeIn)) {
+                     $minutesLate = abs($timeIn->diffInMinutes($baseTimeIn));
+                     $keterangan = "Terlambat $minutesLate menit";
+                     
+                     $lateFeePerInterval = $this->company->late_fee_per_minute ?? 0;
+                     $interval = $this->company->late_fee_interval_minutes ?? 1;
+                     if ($interval > 0) {
+                         $blocks = ceil($minutesLate / $interval);
+                         $denda = $blocks * $lateFeePerInterval;
+                     }
+                 }
             }
         }
 
@@ -91,7 +116,7 @@ class DailyAttendanceSheet implements FromCollection, WithHeadings, WithMapping,
             $attendance->date_attendance,
             $attendance->time_in ?? '-',
             $attendance->time_out ?? '-',
-            $attendance->is_late ? 'Terlambat' : 'Tepat Waktu',
+            $statusLabel,
             $keterangan,
             'Rp ' . number_format($denda, 0, ',', '.')
         ];

@@ -154,7 +154,7 @@
                         @endif
                         
                         {{-- Login Form --}}
-                        <form method="POST" action="{{ route('login') }}" class="space-y-5">
+                        <form method="POST" action="{{ route('login.attempt') }}" class="space-y-5">
                             @csrf
                             
                             {{-- Email Input --}}

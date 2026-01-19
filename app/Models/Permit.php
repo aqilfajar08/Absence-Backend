@@ -15,6 +15,7 @@ class Permit extends Model
         'reason',
         'image',
         'is_approved',
+        'permit_type',
     ];
 
     public function user()

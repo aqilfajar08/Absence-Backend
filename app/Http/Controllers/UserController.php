@@ -22,7 +22,7 @@ class UserController extends Controller
             ->when($request->input('name'), function ($query, $name) {
                 return $query->where('name', 'like', '%' . $name . '%');
             })
-            ->orderBy('id', 'desc')
+            ->orderBy('name', 'asc')
             ->paginate(10);
         return view('pages.users.index', compact('users'));
     }
@@ -63,9 +63,11 @@ class UserController extends Controller
             'role' => 'required', // Role is required now
             'department' => 'nullable',
             'password' => 'required',
-            'email' => 'required|email',
+            'email' => 'required|email|unique:users,email',
             'gaji_pokok' => 'nullable|numeric|min:0',
             'tunjangan' => 'nullable|numeric|min:0',
+        ], [
+            'email.unique' => 'Email ini sudah terdaftar. Gunakan email lain.',
         ]);
 
         $user = User::create([
@@ -80,7 +82,7 @@ class UserController extends Controller
 
         $user->assignRole($request->role);
 
-        return redirect()->route('user.index')->with('success', 'User created successfully');
+        return redirect()->route('user.index')->with('success', 'Data karyawan berhasil ditambahkan');
     }
     
     public function edit($id)
@@ -113,7 +115,7 @@ class UserController extends Controller
         $user->update($data);
         $user->syncRoles($request->role);
 
-        return redirect()->route('user.index')->with('success', 'User updated successfully');
+        return redirect()->route('user.index')->with('success', 'Data karyawan berhasil diperbarui');
     }
 
     public function delete($id) {
@@ -124,7 +126,7 @@ class UserController extends Controller
     public function destroy(User $user) {
         $user->delete();
 
-        return redirect()->route('user.index')->with('success', 'User deleted successfully');
+        return redirect()->route('user.index')->with('success', 'Karyawan berhasil dihapus');
     }
 
     public function exportAttendance(Request $request)
@@ -145,7 +147,11 @@ class UserController extends Controller
         $filename = 'attendance_report_' . 
                    $monthDate->format('F_Y') . '.xlsx';
 
-        return Excel::download(new AttendanceExport($startDate, $endDate), $filename);
+        return Excel::download(new AttendanceExport((object)[
+            'start_date' => $startDate,
+            'end_date' => $endDate,
+            'search' => null
+        ]), $filename);
     }
 
     public function userAttendance($id)

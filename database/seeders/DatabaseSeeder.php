@@ -19,7 +19,7 @@ class DatabaseSeeder extends Seeder
             RolePermissionSeeder::class,  // Run this first
             UserSeeder::class,
             CompanySeeder::class,
-            AttendanceSeeder::class,
+            // AttendanceSeeder::class,
             PermissionSeeder::class,
         ]);
     }           

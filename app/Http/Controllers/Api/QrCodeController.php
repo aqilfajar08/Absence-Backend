@@ -32,7 +32,7 @@ class QrCodeController extends Controller
             'code' => $code,
             'valid_date' => Carbon::today(),
             'generated_at_time' => Carbon::now()->format('H:i:s'),
-            'expires_at' => Carbon::today()->endOfDay(),
+            'expires_at' => Carbon::today()->setTime(18, 0, 0), // Expire at 18:00 (6 PM)
             'is_active' => true,
         ]);
 

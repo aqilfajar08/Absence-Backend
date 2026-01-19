@@ -40,6 +40,7 @@ class QrCode extends Model
     {
         return $this->is_active 
             && $this->valid_date->isToday() 
+            && Carbon::now()->hour >= 6 // Valid from 06:00
             && Carbon::now()->lessThan($this->expires_at);
     }
 
