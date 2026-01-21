@@ -34,3 +34,9 @@ yarn-error.log
 # Cache and Logs
 /storage/logs/*
 !/storage/logs/.gitkeep
+
+# SRS Documentation
+/docs/SRS*.md
+
+# Deployment Checklist
+DEPLOYMENT_CHECKLIST.md

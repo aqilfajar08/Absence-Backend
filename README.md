@@ -1,18 +1,18 @@
-# 📱 Sistem Informasi Presensi Karyawan
+# Sistem Informasi Presensi Karyawan
 
 Sistem presensi karyawan berbasis Laravel dengan QR Code, GPS tracking, dan laporan absensi lengkap.
 
-## 🚀 Fitur Utama
+## Fitur Utama
 
-- ✅ **Absensi QR Code** - Check-in/Check-out dengan scan QR Code
-- 📍 **GPS Tracking** - Validasi lokasi karyawan dengan radius kantor
-- 👥 **Multi-Role System** - Administrator, Resepsionis, dan Karyawan
-- 📊 **Laporan Excel** - Export laporan absensi bulanan
-- 🔔 **Notifikasi Push** - Firebase Cloud Messaging untuk pengingat
-- 📅 **Kalender Riwayat** - Visualisasi kehadiran bulanan
-- ⚙️ **Pengaturan Fleksibel** - Konfigurasi jam kerja dan potongan
+- **Absensi QR Code** - Check-in/Check-out dengan scan QR Code
+- **GPS Tracking** - Validasi lokasi karyawan dengan radius kantor
+- **Multi-Role System** - Administrator, Resepsionis, dan Karyawan
+- **Laporan Excel** - Export laporan absensi bulanan
+- **Notifikasi Push** - Firebase Cloud Messaging untuk pengingat
+- **Kalender Riwayat** - Visualisasi kehadiran bulanan
+- **Pengaturan Fleksibel** - Konfigurasi jam kerja dan potongan
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Backend**: Laravel 11.x
 - **Frontend**: Blade Templates + Tailwind CSS + Alpine.js
@@ -20,7 +20,7 @@ Sistem presensi karyawan berbasis Laravel dengan QR Code, GPS tracking, dan lapo
 - **Mobile**: Flutter (repository terpisah)
 - **Notifications**: Firebase Cloud Messaging
 
-## 📋 Persyaratan Sistem
+## Persyaratan Sistem
 
 - PHP >= 8.2
 - Composer
@@ -28,7 +28,7 @@ Sistem presensi karyawan berbasis Laravel dengan QR Code, GPS tracking, dan lapo
 - Node.js >= 18.x
 - NPM atau Yarn
 
-## 📥 Instalasi Development
+## Instalasi Development
 
 ### 1. Clone Repository
 
@@ -115,7 +115,7 @@ Akses: `http://localhost:8000`
 
 ---
 
-## 🚀 Deployment ke Production
+## Deployment ke Production
 
 **PENTING**: Baca file `DEPLOYMENT_CHECKLIST.md` untuk panduan lengkap deployment!
 
@@ -143,7 +143,7 @@ chown -R www-data:www-data storage bootstrap/cache
 
 ---
 
-## 📂 Struktur Project
+## Struktur Project
 
 ```
 ├── app/
@@ -173,15 +173,15 @@ chown -R www-data:www-data storage bootstrap/cache
 
 ---
 
-## 🔐 Keamanan
+## Keamanan
 
-✅ **Rate Limiting** - Login dibatasi 5 percobaan per menit  
-✅ **CSRF Protection** - Aktif di semua form  
-✅ **Password Hashing** - BCrypt dengan 12 rounds  
-✅ **SQL Injection Protection** - Eloquent ORM dengan prepared statements  
-✅ **Input Validation** - Validasi ketat di semua input
+- **Rate Limiting** - Login dibatasi 5 percobaan per menit
+- **CSRF Protection** - Aktif di semua form
+- **Password Hashing** - BCrypt dengan 12 rounds
+- **SQL Injection Protection** - Eloquent ORM dengan prepared statements
+- **Input Validation** - Validasi ketat di semua input
 
-⚠️ **WAJIB** saat production:
+**PENTING** saat production:
 
 - Set `APP_DEBUG=false`
 - Set `SESSION_SECURE_COOKIE=true` (jika pakai HTTPS)
@@ -191,22 +191,22 @@ chown -R www-data:www-data storage bootstrap/cache
 
 ---
 
-## 📊 Fitur Detail
+## Fitur Detail
 
-### 🔐 Authentication & Authorization
+### Authentication & Authorization
 
 - Multi-role system (Admin, Resepsionis, Karyawan)
 - Laravel Sanctum untuk API authentication
 - Session-based auth untuk web
 
-### 📍 Absensi QR Code
+### Absensi QR Code
 
 - QR Code harian yang di-generate resepsionis
 - Validasi token dan tanggal
 - GPS radius checking
 - Auto-calculate keterlambatan
 
-### ⏰ Sistem Keterlambatan
+### Sistem Keterlambatan
 
 - **Terlambat 1**: 08:01 - 08:30 (Potongan GPH kecil)
 - **Terlambat 2**: 08:31 - 09:00 (Potongan GPH sedang)
@@ -214,14 +214,14 @@ chown -R www-data:www-data storage bootstrap/cache
 - **Setengah Hari**: > 12:00 (Potongan GPH maksimal)
 - Threshold dan persentase potongan bisa diatur admin
 
-### 📈 Laporan & Export
+### Laporan & Export
 
 - Filter berdasarkan tanggal dan nama
 - Export ke Excel dengan format lengkap
 - Perhitungan otomatis potongan gaji
 - Visualisasi calendar view
 
-### 🎨 UI/UX Features
+### UI/UX Features
 
 - Responsive design (Desktop to Mobile)
 - Real-time attendance monitoring
@@ -231,7 +231,7 @@ chown -R www-data:www-data storage bootstrap/cache
 
 ---
 
-## 🔧 Commands Penting
+## Commands Penting
 
 ```bash
 # Clear all cache
@@ -252,7 +252,7 @@ php artisan test
 
 ---
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### Error: "500 Internal Server Error"
 
@@ -275,7 +275,7 @@ php artisan view:clear
 
 ---
 
-## 📞 Support & Documentation
+## Support & Documentation
 
 - **Deployment Guide**: Lihat `DEPLOYMENT_CHECKLIST.md`
 - **SRS Document**: Lihat `docs/SRS_Sistem_Presensi.md`
@@ -283,28 +283,28 @@ php artisan view:clear
 
 ---
 
-## 📝 License
+## License
 
 This project is proprietary software. All rights reserved.
 
 ---
 
-## 👥 Credits
+## Credits
 
 Developed for Kantor Kasau TNI AU  
 © 2026 - All Rights Reserved
 
 ---
 
-## 🔄 Changelog
+## Changelog
 
 ### Version 1.0.0 (January 2026)
 
-- ✅ Initial release
-- ✅ QR Code attendance system
-- ✅ GPS tracking
-- ✅ Multi-role authorization
-- ✅ Excel export
-- ✅ Lateness calculation system
-- ✅ Firebase notifications
-- ✅ Calendar history view
+- Initial release
+- QR Code attendance system
+- GPS tracking
+- Multi-role authorization
+- Excel export
+- Lateness calculation system
+- Firebase notifications
+- Calendar history view

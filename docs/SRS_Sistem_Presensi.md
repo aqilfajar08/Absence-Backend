@@ -320,3 +320,39 @@ Loading indicator (spinner atau skeleton) ditampilkan saat proses yang membutuhk
 **Aksesibilitas**
 
 Icon selalu disertai dengan label text untuk clarity. Field input memiliki label yang jelas dan placeholder yang deskriptif. Tab navigation dapat dilakukan dengan keyboard untuk aksesibilitas. Focus state pada elemen interaktif ditampilkan dengan jelas saat navigasi dengan keyboard.
+
+## 3.2 Hardware Interfaces
+
+Sistem Informasi Presensi Karyawan beroperasi melalui peramban web sehingga tidak membutuhkan perangkat keras khusus selain perangkat standar yang dapat menjalankan browser modern dengan dukungan kamera dan GPS. Adapun karakteristik antarmuka perangkat keras yang didukung adalah sebagai berikut.
+
+**Perangkat yang Didukung**
+
+Laptop, komputer desktop, tablet, dan smartphone dengan spesifikasi minimal RAM 4 GB dan prosesor dual-core untuk memastikan performa optimal saat menjalankan fitur scan QR Code yang membutuhkan akses kamera real-time. Perangkat mobile direkomendasikan memiliki minimal Android 9.0 (Pie) atau iOS 13 ke atas untuk kompatibilitas penuh dengan fitur GPS dan kamera.
+
+**Perangkat Input**
+
+Semua interaksi pengguna dilakukan melalui perangkat input standar seperti keyboard, mouse, dan touchscreen untuk navigasi aplikasi. Khusus untuk fitur scan QR Code, perangkat wajib dilengkapi dengan kamera yang mampu mengambil gambar dengan resolusi minimal 720p untuk memastikan QR Code dapat terbaca dengan jelas. Kamera harus mendukung autofocus untuk hasil scan yang lebih akurat.
+
+**Sensor Lokasi (GPS)**
+
+Perangkat harus dilengkapi dengan GPS atau sensor lokasi yang aktif dan akurat untuk fitur validasi kehadiran berbasis radius kantor. Pada perangkat mobile, GPS built-in sudah mencukupi. Pada perangkat desktop atau laptop yang tidak memiliki GPS internal, sistem akan menggunakan geolocation berbasis IP atau WiFi positioning dengan tingkat akurasi yang lebih rendah. Akurasi GPS minimal 10 meter diperlukan untuk validasi radius yang tepat.
+
+**Koneksi Internet**
+
+Perangkat harus terhubung ke internet dengan koneksi yang stabil untuk mengakses sistem secara real-time, mengirim data absensi ke server, serta mengunduh QR Code harian. Bandwidth minimal yang disarankan adalah 2 Mbps untuk pengalaman pengguna yang lancar, terutama saat mengakses fitur kamera dan upload foto profil. Koneksi dapat menggunakan WiFi, mobile data (3G/4G/5G), atau jaringan kabel.
+
+**Protokol Komunikasi**
+
+Sistem memanfaatkan protokol HTTPS untuk semua pertukaran data antara client dan server guna menjamin keamanan data selama proses transmisi, terutama untuk data sensitif seperti koordinat GPS, informasi kehadiran, dan kredensial login. WebSocket atau long polling dapat digunakan untuk fitur real-time monitoring kehadiran pada halaman resepsionis. Komunikasi dengan browser API seperti Geolocation API dan Media Devices API menggunakan protokol standar browser yang aman.
+
+**Karakteristik Display**
+
+Sistem dirancang responsif sehingga tampilan dan fungsi dapat berjalan dengan baik pada berbagai ukuran layar mulai dari smartphone dengan layar 5 inci (resolusi minimal 720 x 1280 pixels) hingga monitor desktop dengan layar 24 inci atau lebih besar (resolusi hingga 1920 x 1080 pixels atau 4K). Layout halaman menyesuaikan secara otomatis menggunakan breakpoint Tailwind CSS untuk memastikan elemen tetap terbaca dan dapat diakses dengan mudah di semua ukuran layar.
+
+**Izin Akses Perangkat**
+
+Browser harus mendapatkan izin eksplisit dari pengguna untuk mengakses kamera (Camera API) dan lokasi GPS (Geolocation API) sesuai dengan kebijakan keamanan browser modern. Sistem akan menampilkan prompt izin saat pertama kali pengguna mengakses fitur scan QR Code atau saat melakukan absensi. Jika izin ditolak, sistem akan menampilkan pesan error yang menjelaskan cara memberikan izin akses melalui pengaturan browser.
+
+**Kompatibilitas Browser**
+
+Sistem mendukung browser modern seperti Google Chrome 90+, Mozilla Firefox 88+, Microsoft Edge 90+, dan Safari 14+ yang memiliki dukungan penuh terhadap HTML5, CSS3, JavaScript ES6+, Media Devices API untuk akses kamera, dan Geolocation API untuk akses GPS. Browser versi lama yang tidak mendukung fitur-fitur tersebut tidak akan dapat menjalankan sistem dengan optimal.
