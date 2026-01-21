@@ -58,7 +58,7 @@
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">Jam Masuk Kantor</label>
                                 <input type="time" name="time_in" value="{{ $company->time_in ?? '08:00' }}" 
                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-maroon/20 focus:border-brand-maroon transition duration-200">
-                                <p class="mt-2 text-xs text-green-600 font-medium">Gaji Diterima: 100%</p>
+                                <p class="mt-2 text-xs text-green-600 font-medium">GPH dipotong 0%</p>
                             </div>
 
                             {{-- Jam Pulang --}}
@@ -78,12 +78,12 @@
                                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-maroon/20 focus:border-brand-maroon transition duration-200">
                                     </div>
                                     <div class="w-1/3 relative">
-                                        <input type="number" name="gph_late_1_percent" value="{{ $company->gph_late_1_percent ?? 75 }}" min="0" max="100"
+                                        <input type="number" name="gph_late_1_percent" value="{{ 100 - ($company->gph_late_1_percent ?? 75) }}" min="0" max="100"
                                             class="w-full pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-maroon/20 focus:border-brand-maroon transition duration-200">
                                         <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">%</span>
                                     </div>
                                 </div>
-                                <p class="mt-2 text-xs text-gray-500">Persentase GPH diterima jika lewat jam ini.</p>
+                                <p class="mt-2 text-xs text-gray-500">Persentase GPH yang dipotong jika lewat jam ini.</p>
                             </div>
 
                             {{-- Terlambat 2 --}}
@@ -95,12 +95,12 @@
                                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-maroon/20 focus:border-brand-maroon transition duration-200">
                                     </div>
                                     <div class="w-1/3 relative">
-                                        <input type="number" name="gph_late_2_percent" value="{{ $company->gph_late_2_percent ?? 70 }}" min="0" max="100"
+                                        <input type="number" name="gph_late_2_percent" value="{{ 100 - ($company->gph_late_2_percent ?? 70) }}" min="0" max="100"
                                             class="w-full pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-maroon/20 focus:border-brand-maroon transition duration-200">
                                         <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">%</span>
                                     </div>
                                 </div>
-                                <p class="mt-2 text-xs text-gray-500">Persentase GPH diterima jika lewat jam ini.</p>
+                                <p class="mt-2 text-xs text-gray-500">Persentase GPH yang dipotong jika lewat jam ini.</p>
                             </div>
 
                             {{-- Terlambat 3 --}}
@@ -112,12 +112,12 @@
                                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-maroon/20 focus:border-brand-maroon transition duration-200">
                                     </div>
                                     <div class="w-1/3 relative">
-                                        <input type="number" name="gph_late_3_percent" value="{{ $company->gph_late_3_percent ?? 65 }}" min="0" max="100"
+                                        <input type="number" name="gph_late_3_percent" value="{{ 100 - ($company->gph_late_3_percent ?? 65) }}" min="0" max="100"
                                             class="w-full pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-maroon/20 focus:border-brand-maroon transition duration-200">
                                         <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">%</span>
                                     </div>
                                 </div>
-                                <p class="mt-2 text-xs text-gray-500">Persentase GPH diterima jika lewat jam ini.</p>
+                                <p class="mt-2 text-xs text-gray-500">Persentase GPH yang dipotong jika lewat jam ini.</p>
                             </div>
 
                             {{-- Setengah Hari --}}
@@ -126,11 +126,11 @@
                                 <div class="flex gap-3 items-center">
                                     <span class="text-sm text-gray-600">Otomatis berlaku jika lewat batas 3.</span>
                                     <div class="w-32 relative">
-                                        <input type="number" name="gph_late_4_percent" value="{{ $company->gph_late_4_percent ?? 0 }}" min="0" max="100"
+                                        <input type="number" name="gph_late_4_percent" value="{{ 100 - ($company->gph_late_4_percent ?? 0) }}" min="0" max="100"
                                             class="w-full pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-maroon/20 focus:border-brand-maroon transition duration-200">
                                         <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">%</span>
                                     </div>
-                                    <span class="text-sm text-gray-600">GPH Diterima</span>
+                                    <span class="text-sm text-gray-600">Potongan GPH</span>
                                 </div>
                             </div>
                         </div>

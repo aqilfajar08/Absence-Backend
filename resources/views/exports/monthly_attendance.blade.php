@@ -7,23 +7,39 @@
      * @var \App\Models\Company $company
      */
     \Carbon\Carbon::setLocale('id');
+
+    // Prepare dynamic time ranges for Legend
+    $cTimeIn = \Carbon\Carbon::parse($company->time_in ?? '08:00:00');
+    $cLate1  = \Carbon\Carbon::parse($company->late_threshold_1 ?? '08:30:00');
+    $cLate2  = \Carbon\Carbon::parse($company->late_threshold_2 ?? '09:00:00');
+    $cLate3  = \Carbon\Carbon::parse($company->late_threshold_3 ?? '12:00:00');
+
+    $range1Start = $cTimeIn->copy()->addMinute()->format('H:i');
+    $range1End   = $cLate1->format('H:i');
+
+    $range2Start = $cLate1->copy()->addMinute()->format('H:i');
+    $range2End   = $cLate2->format('H:i');
+
+    $range3Start = $cLate2->copy()->addMinute()->format('H:i');
+    $range3End   = $cLate3->format('H:i');
+
+    $range4Start = $cLate3->copy()->addMinute()->format('H:i');
 @endphp
 <table style="border-collapse: collapse; width: 100%; font-size: 11px;">
     <thead>
         <tr>
-            <th colspan="{{ 4 + $daysInMonth + 15 }}" style="font-weight: bold; font-size: 16px; text-align: center; height: 30px; vertical-align: middle;">
+            <th colspan="{{ 3 + $daysInMonth + 15 }}" style="font-weight: bold; font-size: 16px; text-align: center; height: 30px; vertical-align: middle;">
                 REKAP ABSENSI KARYAWAN PT. KASAU SINAR SAMUDERA {{ $year }}
             </th>
         </tr>
         <tr>
-            <th colspan="{{ 4 + $daysInMonth + 15 }}" style="font-weight: bold; font-size: 14px; text-align: center; height: 25px; vertical-align: middle;">
+            <th colspan="{{ 3 + $daysInMonth + 15 }}" style="font-weight: bold; font-size: 14px; text-align: center; height: 25px; vertical-align: middle;">
                 PERIODE {{ strtoupper(\Carbon\Carbon::createFromDate($year, $month, 1)->translatedFormat('F Y')) }}
             </th>
         </tr>
         <tr>
             <th rowspan="2" style="border: 1px solid #000000; font-weight: bold; text-align: center; background-color: #d9d9d9; width: 5px; vertical-align: middle;">No</th>
             <th rowspan="2" style="border: 1px solid #000000; font-weight: bold; text-align: center; background-color: #d9d9d9; width: 15px; vertical-align: middle;">Dept</th>
-            <th rowspan="2" style="border: 1px solid #000000; font-weight: bold; text-align: center; background-color: #d9d9d9; width: 15px; vertical-align: middle;">Account No.</th>
             <th rowspan="2" style="border: 1px solid #000000; font-weight: bold; text-align: center; background-color: #d9d9d9; width: 30px; vertical-align: middle;">Nama</th>
             
             <th colspan="{{ $daysInMonth }}" style="border: 1px solid #000000; font-weight: bold; text-align: center; background-color: #d9d9d9; vertical-align: middle;">Tanggal</th>
@@ -86,7 +102,6 @@
             <tr>
                 <td style="border: 1px solid #000000; text-align: center;">{{ $index + 1 }}</td>
                 <td style="border: 1px solid #000000;">{{ $user->department ?? '-' }}</td>
-                <td style="border: 1px solid #000000; text-align: center;">{{ $user->id }}</td>
                 <td style="border: 1px solid #000000;">{{ $user->name }}</td>
 
                 @for($i = 1; $i <= $daysInMonth; $i++)
@@ -255,236 +270,152 @@
             </tr>
         @endforeach
     </tbody>
-    <tfoot>
-        <tr>
-            <td colspan="{{ 4 + $daysInMonth + 15 }}"></td>
-        </tr>
-        
-        {{-- Complex Footer: Legend on Left (Rows 1-6), Deduction Table on Right (All Rows) --}}
-        
-        {{-- Header Row for Deduction Table (Row 1 of Footer) --}}
-        <tr>
-            {{-- Legend Header --}}
-            <td colspan="5" style="font-weight: bold;">Keterangan:</td>
-            
-            <td colspan="1"></td> {{-- Small Spacer --}}
-
-            {{-- Deduction Table Headers --}}
-            <td rowspan="2" style="border: 1px solid #000000; font-weight: bold; text-align: center; width: 5px; vertical-align: middle;">No</td>
-            <td rowspan="2" style="border: 1px solid #000000; font-weight: bold; text-align: center; width: 30px; vertical-align: middle;">Nama</td>
-            <th colspan="4" style="border: 1px solid #000000; font-weight: bold; text-align: center; background-color: #d9d9d9; vertical-align: middle;">Terlambat</th>
-            <th rowspan="2" style="border: 1px solid #000000; font-weight: bold; text-align: center; background-color: #d9d9d9; vertical-align: middle; width: 15px;">Sub Total I</th>
-            <th colspan="2" style="border: 1px solid #000000; font-weight: bold; text-align: center; background-color: #d9d9d9; vertical-align: middle;">Izin / Sakit</th>
-            <th rowspan="2" style="border: 1px solid #000000; font-weight: bold; text-align: center; vertical-align: middle; width: 10px;">Kehadiran</th>
-            <th rowspan="2" style="border: 1px solid #000000; font-weight: bold; text-align: center; background-color: #b4c6e7; vertical-align: middle; width: 15px;">Sub Total II</th>
-            <th rowspan="2" style="border: 1px solid #000000; font-weight: bold; text-align: center; background-color: #f8cbad; vertical-align: middle; width: 15px;">Uniform Deduction</th>
-            <th rowspan="2" style="border: 1px solid #000000; font-weight: bold; text-align: center; background-color: #ffff00; vertical-align: middle; width: 15px;">Total Deduction</th>
-
-            {{-- Trailing Spacer to fill row --}}
-            <td colspan="{{ (4 + $daysInMonth + 15) - (5 + 1 + 13) }}"></td>
-        </tr>
-
-        {{-- Row 2 of Footer (Legend Item 1, Deduction Sub-Headers) --}}
-        <tr>
-            <td style="background-color: #ff0000; width: 20px;"></td>
-            <td colspan="4">Hari Libur</td>
-            
-            <td colspan="1"></td> {{-- Small Spacer --}}
-
-            {{-- Deduction Sub Headers --}}
-            <th style="border: 1px solid #000000; font-weight: bold; text-align: center; background-color: #548235; color: #000000; width: 10px;">I</th>
-            <th style="border: 1px solid #000000; font-weight: bold; text-align: center; background-color: #FFC000; color: #000000; width: 10px;">II</th>
-            <th style="border: 1px solid #000000; font-weight: bold; text-align: center; background-color: #FFFF00; color: #000000; width: 10px;">III</th>
-            <th style="border: 1px solid #000000; font-weight: bold; text-align: center; background-color: #A9D08E; color: #000000; width: 10px;">IV</th>
-            <th style="border: 1px solid #000000; font-weight: bold; text-align: center; background-color: #757171; width: 10px;">Izin</th>
-            <th style="border: 1px solid #000000; font-weight: bold; text-align: center; background-color: #BFBFBF; width: 10px;">Sakit</th>
-
-            {{-- Trailing Spacer --}}
-            <td colspan="{{ (4 + $daysInMonth + 15) - (5 + 1 + 13) }}"></td>
-        </tr>
-
-        {{-- Loop for Users (Deduction Body) combined with Legend Items --}}
-        @foreach($users as $index => $user)
-            @php
-                 // Recalculate Logic for this user (unfortunately necessary unless we cached it)
-                 // We will just do a simplified check or copy logic.
-                 // Ideally we should have pre-calculated this in Controller, but for now we repeat logic.
-                 $late1Count = 0; $late2Count = 0; $late3Count = 0; $late4Count = 0;
-                 $izinCount = 0; $sakitCount = 0; $alpaCount = 0;
-                 // ... (Repeat loop over days for this user to get counts) ...
-                  for($i = 1; $i <= $daysInMonth; $i++) {
-                        $currentDate = \Carbon\Carbon::createFromDate($year, $month, $i);
-                        $dateString = $currentDate->format('Y-m-d');
-                        $isSunday = $currentDate->isSunday();
-                        $attendance = $user->attendance->first(function($att) use ($dateString) {
-                            return \Carbon\Carbon::parse($att->date_attendance)->format('Y-m-d') === $dateString;
-                        });
-                        $permit = $user->permits->firstWhere('date_permission', $dateString);
-                        
-                        if ($permit && $permit->is_approved == 'approved') {
-                            if ($permit->permit_type == 'sakit') $sakitCount++;
-                            elseif ($permit->permit_type == 'izin') $izinCount++;
-                        } elseif ($attendance && $attendance->time_in) {
-                            $timeIn = \Carbon\Carbon::parse($attendance->time_in)->setDate($year, $month, $i);
-                            $tTimeIn = \Carbon\Carbon::parse($company->time_in ?? '08:00:00')->setDate($year, $month, $i)->addSeconds(59);
-                            $tLate1  = \Carbon\Carbon::parse($company->late_threshold_1 ?? '08:30:00')->setDate($year, $month, $i)->addSeconds(59);
-                            $tLate2  = \Carbon\Carbon::parse($company->late_threshold_2 ?? '09:00:00')->setDate($year, $month, $i)->addSeconds(59);
-                            $tLate3  = \Carbon\Carbon::parse($company->late_threshold_3 ?? '12:00:00')->setDate($year, $month, $i)->addSeconds(59);
-
-                            if ($timeIn->lte($tTimeIn)) {
-                                // On Time - No Deduction
-                            } elseif ($timeIn->gt($tTimeIn) && $timeIn->lte($tLate1)) $late1Count++;
-                            elseif ($timeIn->gt($tLate1) && $timeIn->lte($tLate2)) $late2Count++;
-                            elseif ($timeIn->gt($tLate2) && $timeIn->lte($tLate3)) $late3Count++;
-                            elseif ($timeIn->gt($tLate3)) $late4Count++;
-                        } elseif ($attendance && $attendance->status && $attendance->status != 'present') {
-                             if ($attendance->status == 'permission') $izinCount++;
-                             elseif ($attendance->status == 'alpha') $alpaCount++;
-                             elseif ($attendance->status == 'sick') $sakitCount++;
-                             // Note: 'leave' (cuti) and 'out_of_town' (DLK) usually do not trigger monetary deductions in this context,
-                             // or if they do, variables might need to be added. 
-                             // Based on current calc:
-                             // $deductionIzin = $izinCount * ...
-                             // $deductionSakit = $sakitCount * ...
-                             // $deductionAlpa = $alpaCount * ...
-                             // So we only update these counters.
-                        } else {
-                            if (!$isSunday && \Carbon\Carbon::parse($user->created_at)->lte($currentDate) && $currentDate->lte(now())) {
-                                $alpaCount++;
-                            }
-                        }
-                  }
-
-
-
-                $p1 = $company->gph_late_1_percent ?? 75; // Late 1
-                $p2 = $company->gph_late_2_percent ?? 70; // Late 2
-                $p3 = $company->gph_late_3_percent ?? 65; // Late 3
-                $p4 = $company->gph_late_4_percent ?? 0;  // Late 4 (Setengah Hari)
-
-                $deductionLate1 = $late1Count * ((100 - $p1) / 100) * ($user->gaji_pokok ?? 0);
-                $deductionLate2 = $late2Count * ((100 - $p2) / 100) * ($user->gaji_pokok ?? 0);
-                $deductionLate3 = $late3Count * ((100 - $p3) / 100) * ($user->gaji_pokok ?? 0);
-                $deductionLate4 = $late4Count * ((100 - $p4) / 100) * ($user->gaji_pokok ?? 0);
-
-                $subTotalDeduction1 = $deductionLate1 + $deductionLate2 + $deductionLate3 + $deductionLate4;
-                $deductionIzin = $izinCount * 1.00 * ($user->gaji_pokok ?? 0);
-                $deductionSakit = $sakitCount * 1.00 * ($user->gaji_pokok ?? 0);
-                $deductionAlpa = $alpaCount * 1.00 * ($user->gaji_pokok ?? 0);
-                $subTotalDeduction2 = $deductionIzin + $deductionSakit + $deductionAlpa;
-                $uniformDeduction = 0;
-                $totalDeduction = $subTotalDeduction1 + $subTotalDeduction2 + $uniformDeduction;
-            @endphp
-            
-            <tr>
-                {{-- Legend Items --}}
-                @if($index == 0)
-                     <td style="background-color: #548235;"></td>
-                    <td colspan="4">Terlambat 1 (08:01-08:30) [Potong {{ 100 - ($company->gph_late_1_percent ?? 75) }}%]</td>
-                @elseif($index == 1)
-                    <td style="background-color: #FFC000;"></td>
-                    <td colspan="4">Terlambat 2 (08:31-09:00) [Potong {{ 100 - ($company->gph_late_2_percent ?? 70) }}%]</td>
-                @elseif($index == 2)
-                    <td style="background-color: #FFFF00;"></td>
-                    <td colspan="4">Terlambat 3 (09:01-12:00) [Potong {{ 100 - ($company->gph_late_3_percent ?? 65) }}%]</td>
-                @elseif($index == 3)
-                     <td style="background-color: #A9D08E;"></td>
-                    <td colspan="4">Setengah Hari (>12:01) [Potong {{ 100 - ($company->gph_late_4_percent ?? 0) }}%]</td>
-                @elseif($index == 4)
-                     <td style="background-color: #757171; color: white;"></td>
-                    <td colspan="4">Dinas Luar Kota (DLK) [GPH 100%]</td>
-                @elseif($index == 5)
-                     <td style="background-color: #757171; color: white;"></td>
-                    <td colspan="4">Izin</td>
-                @elseif($index == 6)
-                     <td style="background-color: #BFBFBF; color: 000000;"></td>
-                    <td colspan="4">Sakit</td>
-                @elseif($index == 7)
-                     <td style="background-color: #00B050; color: white;"></td>
-                    <td colspan="4">Off/Cuti ONLY GP</td>
-                @elseif($index == 8)
-                     <td style="background-color: #5B9BD5; color: white;"></td>
-                    <td colspan="4">Alpa (Tanpa Keterangan)</td>
-                @else
-                    <td colspan="5"></td>
-                @endif
-
-                <td colspan="1"></td> {{-- Small Spacer --}}
-
-                {{-- Deduction Body Columns --}}
-                <td style="border: 1px solid #000000; text-align: center;">{{ $index + 1 }}</td>
-                <td style="border: 1px solid #000000;">{{ $user->name }}</td>
-                <td style="border: 1px solid #000000; text-align: right; background-color: #548235;">{{ $deductionLate1 > 0 ? number_format($deductionLate1) : '-' }}</td>
-                <td style="border: 1px solid #000000; text-align: right; background-color: #FFC000;">{{ $deductionLate2 > 0 ? number_format($deductionLate2) : '-' }}</td>
-                <td style="border: 1px solid #000000; text-align: right; background-color: #FFFF00;">{{ $deductionLate3 > 0 ? number_format($deductionLate3) : '-' }}</td>
-                <td style="border: 1px solid #000000; text-align: right; background-color: #A9D08E;">{{ $deductionLate4 > 0 ? number_format($deductionLate4) : '-' }}</td>
-                <td style="border: 1px solid #000000; text-align: right; background-color: #d9d9d9;">{{ $subTotalDeduction1 > 0 ? number_format($subTotalDeduction1) : '-' }}</td>
-                <td style="border: 1px solid #000000; text-align: right; background-color: #757171;">{{ $deductionIzin > 0 ? number_format($deductionIzin) : '-' }}</td>
-                <td style="border: 1px solid #000000; text-align: right; background-color: #BFBFBF;">{{ $deductionSakit > 0 ? number_format($deductionSakit) : '-' }}</td>
-                <td style="border: 1px solid #000000; text-align: right; background-color: #5B9BD5;">{{ $deductionAlpa > 0 ? number_format($deductionAlpa) : '-' }}</td>
-                <td style="border: 1px solid #000000; text-align: right; background-color: #b4c6e7;">{{ $subTotalDeduction2 > 0 ? number_format($subTotalDeduction2) : '-' }}</td>
-                <td style="border: 1px solid #000000; text-align: right; background-color: #f8cbad;">-</td>
-                <td style="border: 1px solid #000000; text-align: right; background-color: #ffff00;">{{ $totalDeduction > 0 ? number_format($totalDeduction) : '-' }}</td>
-
-                {{-- Trailing Spacer --}}
-                <td colspan="{{ (4 + $daysInMonth + 15) - (5 + 1 + 13) }}"></td>
-            </tr>
-        @endforeach
-
-        {{-- Fill Remaining Legend Items if Users < 11 --}}
-        @for($j = $users->count(); $j <= 8; $j++)
-             <tr>
-                @if($j == 0)
-                     <td style="background-color: #548235;"></td>
-                    <td colspan="4">Terlambat 1 (08:01-08:30) [Potong {{ 100 - ($company->gph_late_1_percent ?? 75) }}%]</td>
-                @elseif($j == 1)
-                    <td style="background-color: #FFC000;"></td>
-                    <td colspan="4">Terlambat 2 (08:31-09:00) [Potong {{ 100 - ($company->gph_late_2_percent ?? 70) }}%]</td>
-                @elseif($j == 2)
-                    <td style="background-color: #FFFF00;"></td>
-                    <td colspan="4">Terlambat 3 (09:01-12:00) [Potong {{ 100 - ($company->gph_late_3_percent ?? 65) }}%]</td>
-                @elseif($j == 3)
-                     <td style="background-color: #A9D08E;"></td>
-                    <td colspan="4">Setengah Hari (>12:01) [Potong {{ 100 - ($company->gph_late_4_percent ?? 0) }}%]</td>
-                @elseif($j == 4)
-                     <td style="background-color: #757171; color: white;"></td>
-                    <td colspan="4">Dinas Luar Kota (DLK) [Gaji 100%]</td>
-                @elseif($j == 5)
-                     <td style="background-color: #757171; color: white;"></td>
-                    <td colspan="4">Izin</td>
-                @elseif($j == 6)
-                     <td style="background-color: #BFBFBF; color: 000000;"></td>
-                    <td colspan="4">Sakit</td>
-                @elseif($j == 7)
-                     <td style="background-color: #00B050; color: white;"></td>
-                    <td colspan="4">Cuti</td>
-                @elseif($j == 8)
-                     <td style="background-color: #5B9BD5; color: white;"></td>
-                    <td colspan="4">Alpa</td>
-                @else
-                    <td colspan="5"></td>
-                @endif
-                
-                <td colspan="1"></td> {{-- Spacer --}}
-
-                {{-- Empty Deduction Cells --}}
-                <td style="border: 1px solid #000000; text-align: center;"> - </td>
-                <td style="border: 1px solid #000000;"> - </td>
-                <td style="border: 1px solid #000000; background-color: #548235;"></td>
-                <td style="border: 1px solid #000000; background-color: #FFC000;"></td>
-                <td style="border: 1px solid #000000; background-color: #FFFF00;"></td>
-                <td style="border: 1px solid #000000; background-color: #A9D08E;"></td>
-                <td style="border: 1px solid #000000; background-color: #d9d9d9;"></td>
-                <td style="border: 1px solid #000000; background-color: #757171;"></td>
-                <td style="border: 1px solid #000000; background-color: #BFBFBF;"></td>
-                <td style="border: 1px solid #000000; background-color: #5B9BD5;"></td>
-                <td style="border: 1px solid #000000; background-color: #b4c6e7;"></td>
-                <td style="border: 1px solid #000000; background-color: #f8cbad;"></td>
-                <td style="border: 1px solid #000000; background-color: #ffff00;"></td>
-
-                 {{-- Trailing Spacer --}}
-                <td colspan="{{ (4 + $daysInMonth + 15) - (5 + 1 + 13) }}"></td>
-            </tr>
-        @endfor
-    </tfoot>
 </table>
+
+{{-- SPACER ROW --}}
+<table style="border-collapse: collapse; width: 100%; font-size: 10px;">
+    <tr><td colspan="30" style="height: 20px;"></td></tr>
+    
+    {{-- COMBINED LEGEND + DEDUCTION TABLE --}}
+    {{-- Row 1: Legend Header + Deduction Header Row 1 --}}
+    <tr style="height: 35px;">
+        {{-- Legend Column --}}
+        <td style="width: 25px;"></td>
+        <td style="font-weight: bold; width: 200px;">Keterangan:</td>
+        <td style="width: 20px;"></td>
+        {{-- Deduction Headers --}}
+        <th colspan="2" rowspan="2" style="border: 1px solid #000; font-weight: bold; text-align: center; background-color: #d9d9d9; vertical-align: middle;">No</th>
+        <th colspan="2" rowspan="2" style="border: 1px solid #000; font-weight: bold; text-align: center; background-color: #d9d9d9; vertical-align: middle;">Nama</th>
+        <th colspan="8" style="border: 1px solid #000; font-weight: bold; text-align: center; background-color: #d9d9d9;">Terlambat</th>
+        <th colspan="2" rowspan="2" style="border: 1px solid #000; font-weight: bold; text-align: center; background-color: #d9d9d9; vertical-align: middle;">Sub Total I</th>
+        <th colspan="6" style="border: 1px solid #000; font-weight: bold; text-align: center; background-color: #d9d9d9;">Izin/Sakit/Alfa</th>
+        <th colspan="2" rowspan="2" style="border: 1px solid #000; font-weight: bold; text-align: center; background-color: #b4c6e7; vertical-align: middle;">Sub Total II</th>
+        <th colspan="2" rowspan="2" style="border: 1px solid #000; font-weight: bold; text-align: center; background-color: #f8cbad; vertical-align: middle;">Uniform Ded.</th>
+        <th colspan="2" rowspan="2" style="border: 1px solid #000; font-weight: bold; text-align: center; background-color: #ffff00; vertical-align: middle;">Total Deduction</th>
+    </tr>
+    
+    {{-- Row 2: Legend Item 1 + Deduction Header Row 2 --}}
+    <tr style="height: 30px;">
+        <td style="background-color: #ff0000; border: 1px solid #000;"></td>
+        <td>Hari Libur</td>
+        <td></td>
+        {{-- Deduction Sub Headers --}}
+        <th colspan="2" style="border: 1px solid #000; font-weight: bold; text-align: center; background-color: #548235;">I</th>
+        <th colspan="2" style="border: 1px solid #000; font-weight: bold; text-align: center; background-color: #FFC000;">II</th>
+        <th colspan="2" style="border: 1px solid #000; font-weight: bold; text-align: center; background-color: #FFFF00;">III</th>
+        <th colspan="2" style="border: 1px solid #000; font-weight: bold; text-align: center; background-color: #A9D08E;">IV</th>
+        <th colspan="2" style="border: 1px solid #000; font-weight: bold; text-align: center; background-color: #757171; color: #fff;">Izin</th>
+        <th colspan="2" style="border: 1px solid #000; font-weight: bold; text-align: center; background-color: #BFBFBF;">Sakit</th>
+        <th colspan="2" style="border: 1px solid #000; font-weight: bold; text-align: center; background-color: #5B9BD5; color: #fff;">Alfa</th>
+    </tr>
+    
+    {{-- Data Rows: Legend Items + Deduction Data --}}
+    @php
+        $legendItems = [
+            ['color' => '#548235', 'text' => 'Terlambat 1 ('.$range1Start.'-'.$range1End.') [Potong '.(100 - ($company->gph_late_1_percent ?? 75)).'%]'],
+            ['color' => '#FFC000', 'text' => 'Terlambat 2 ('.$range2Start.'-'.$range2End.') [Potong '.(100 - ($company->gph_late_2_percent ?? 70)).'%]'],
+            ['color' => '#FFFF00', 'text' => 'Terlambat 3 ('.$range3Start.'-'.$range3End.') [Potong '.(100 - ($company->gph_late_3_percent ?? 65)).'%]'],
+            ['color' => '#A9D08E', 'text' => 'Setengah Hari (>'.$range4Start.') [Potong '.(100 - ($company->gph_late_4_percent ?? 0)).'%]'],
+            ['color' => '#757171', 'text' => 'Dinas Luar Kota (DLK) / Izin'],
+            ['color' => '#BFBFBF', 'text' => 'Sakit'],
+            ['color' => '#00B050', 'text' => 'Off/Cuti'],
+            ['color' => '#5B9BD5', 'text' => 'Alpa (Tanpa Keterangan)'],
+        ];
+    @endphp
+    
+    @foreach($users as $index => $user)
+        @php
+            $late1Count = 0; $late2Count = 0; $late3Count = 0; $late4Count = 0;
+            $izinCount = 0; $sakitCount = 0; $alpaCount = 0;
+            
+            for($i = 1; $i <= $daysInMonth; $i++) {
+                $currentDate = \Carbon\Carbon::createFromDate($year, $month, $i);
+                $dateString = $currentDate->format('Y-m-d');
+                $isSunday = $currentDate->isSunday();
+                $attendance = $user->attendance->first(function($att) use ($dateString) {
+                    return \Carbon\Carbon::parse($att->date_attendance)->format('Y-m-d') === $dateString;
+                });
+                $permit = $user->permits->firstWhere('date_permission', $dateString);
+                
+                if ($permit && $permit->is_approved == 'approved') {
+                    if ($permit->permit_type == 'sakit') $sakitCount++;
+                    elseif ($permit->permit_type == 'izin') $izinCount++;
+                } elseif ($attendance && $attendance->time_in) {
+                    $timeIn = \Carbon\Carbon::parse($attendance->time_in)->setDate($year, $month, $i);
+                    $tTimeIn = \Carbon\Carbon::parse($company->time_in ?? '08:00:00')->setDate($year, $month, $i)->addSeconds(59);
+                    $tLate1  = \Carbon\Carbon::parse($company->late_threshold_1 ?? '08:30:00')->setDate($year, $month, $i)->addSeconds(59);
+                    $tLate2  = \Carbon\Carbon::parse($company->late_threshold_2 ?? '09:00:00')->setDate($year, $month, $i)->addSeconds(59);
+                    $tLate3  = \Carbon\Carbon::parse($company->late_threshold_3 ?? '12:00:00')->setDate($year, $month, $i)->addSeconds(59);
+
+                    if ($timeIn->lte($tTimeIn)) {
+                        // On Time
+                    } elseif ($timeIn->gt($tTimeIn) && $timeIn->lte($tLate1)) $late1Count++;
+                    elseif ($timeIn->gt($tLate1) && $timeIn->lte($tLate2)) $late2Count++;
+                    elseif ($timeIn->gt($tLate2) && $timeIn->lte($tLate3)) $late3Count++;
+                    elseif ($timeIn->gt($tLate3)) $late4Count++;
+                } elseif ($attendance && $attendance->status && $attendance->status != 'present') {
+                    if ($attendance->status == 'permission') $izinCount++;
+                    elseif ($attendance->status == 'alpha') $alpaCount++;
+                    elseif ($attendance->status == 'sick') $sakitCount++;
+                } else {
+                    if (!$isSunday && \Carbon\Carbon::parse($user->created_at)->lte($currentDate) && $currentDate->lte(now())) {
+                        $alpaCount++;
+                    }
+                }
+            }
+
+            $p1 = $company->gph_late_1_percent ?? 75;
+            $p2 = $company->gph_late_2_percent ?? 70;
+            $p3 = $company->gph_late_3_percent ?? 65;
+            $p4 = $company->gph_late_4_percent ?? 0;
+
+            $deductionLate1 = $late1Count * ((100 - $p1) / 100) * ($user->gaji_pokok ?? 0);
+            $deductionLate2 = $late2Count * ((100 - $p2) / 100) * ($user->gaji_pokok ?? 0);
+            $deductionLate3 = $late3Count * ((100 - $p3) / 100) * ($user->gaji_pokok ?? 0);
+            $deductionLate4 = $late4Count * ((100 - $p4) / 100) * ($user->gaji_pokok ?? 0);
+
+            $subTotalDeduction1 = $deductionLate1 + $deductionLate2 + $deductionLate3 + $deductionLate4;
+            $deductionIzin = 0;
+            $deductionSakit = 0;
+            $deductionAlpa = 0;
+            $subTotalDeduction2 = $deductionIzin + $deductionSakit + $deductionAlpa;
+            $uniformDeduction = 0;
+            $totalDeduction = $subTotalDeduction1 + $subTotalDeduction2 + $uniformDeduction;
+        @endphp
+        <tr>
+            {{-- Legend Column --}}
+            @if($index < count($legendItems))
+                <td style="background-color: {{ $legendItems[$index]['color'] }}; border: 1px solid #000;"></td>
+                <td>{{ $legendItems[$index]['text'] }}</td>
+            @else
+                <td></td>
+                <td></td>
+            @endif
+            <td></td>
+            {{-- Deduction Data --}}
+            <td colspan="2" style="border: 1px solid #000; text-align: center;">{{ $index + 1 }}</td>
+            <td colspan="2" style="border: 1px solid #000; padding-left: 4px;">{{ $user->name }}</td>
+            <td colspan="2" style="border: 1px solid #000; text-align: right; padding-right: 4px; background-color: #548235;">{{ $deductionLate1 > 0 ? number_format($deductionLate1) : '-' }}</td>
+            <td colspan="2" style="border: 1px solid #000; text-align: right; padding-right: 4px; background-color: #FFC000;">{{ $deductionLate2 > 0 ? number_format($deductionLate2) : '-' }}</td>
+            <td colspan="2" style="border: 1px solid #000; text-align: right; padding-right: 4px; background-color: #FFFF00;">{{ $deductionLate3 > 0 ? number_format($deductionLate3) : '-' }}</td>
+            <td colspan="2" style="border: 1px solid #000; text-align: right; padding-right: 4px; background-color: #A9D08E;">{{ $deductionLate4 > 0 ? number_format($deductionLate4) : '-' }}</td>
+            <td colspan="2" style="border: 1px solid #000; text-align: right; padding-right: 4px; background-color: #d9d9d9; font-weight: bold;">{{ $subTotalDeduction1 > 0 ? number_format($subTotalDeduction1) : '-' }}</td>
+            <td colspan="2" style="border: 1px solid #000; text-align: right; padding-right: 4px; background-color: #757171; color: #fff;">{{ $deductionIzin > 0 ? number_format($deductionIzin) : '-' }}</td>
+            <td colspan="2" style="border: 1px solid #000; text-align: right; padding-right: 4px; background-color: #BFBFBF;">{{ $deductionSakit > 0 ? number_format($deductionSakit) : '-' }}</td>
+            <td colspan="2" style="border: 1px solid #000; text-align: right; padding-right: 4px; background-color: #5B9BD5; color: #fff;">{{ $deductionAlpa > 0 ? number_format($deductionAlpa) : '-' }}</td>
+            <td colspan="2" style="border: 1px solid #000; text-align: right; padding-right: 4px; background-color: #b4c6e7; font-weight: bold;">{{ $subTotalDeduction2 > 0 ? number_format($subTotalDeduction2) : '-' }}</td>
+            <td colspan="2" style="border: 1px solid #000; text-align: right; padding-right: 4px; background-color: #f8cbad;">-</td>
+            <td colspan="2" style="border: 1px solid #000; text-align: right; padding-right: 4px; background-color: #ffff00; font-weight: bold;">{{ $totalDeduction > 0 ? number_format($totalDeduction) : '-' }}</td>
+        </tr>
+    @endforeach
+    
+    {{-- Remaining legend items if users < legend items --}}
+    @for($j = count($users); $j < count($legendItems); $j++)
+        <tr>
+            <td style="background-color: {{ $legendItems[$j]['color'] }}; border: 1px solid #000;"></td>
+            <td>{{ $legendItems[$j]['text'] }}</td>
+            <td colspan="28"></td>
+        </tr>
+    @endfor
+</table>
+

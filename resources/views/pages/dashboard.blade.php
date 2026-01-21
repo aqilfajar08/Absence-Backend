@@ -64,8 +64,8 @@
                         </div>
                     </div>
                     <div class="mt-3 pt-2 border-t border-green-200/60 flex justify-between items-center">
-                        <span class="text-xs text-green-600">GPH</span>
-                        <span class="text-sm font-bold text-green-800">{{ $company->gph_late_1_percent ?? 75 }}%</span>
+                        <span class="text-xs text-green-600">Potongan GPH</span>
+                        <span class="text-sm font-bold text-green-800">{{ 100 - ($company->gph_late_1_percent ?? 75) }}%</span>
                     </div>
                 </div>
 
@@ -81,8 +81,8 @@
                         </div>
                     </div>
                     <div class="mt-3 pt-2 border-t border-yellow-200/60 flex justify-between items-center">
-                        <span class="text-xs text-yellow-700">GPH</span>
-                        <span class="text-sm font-bold text-yellow-900">{{ $company->gph_late_2_percent ?? 70 }}%</span>
+                        <span class="text-xs text-yellow-700">Potongan GPH</span>
+                        <span class="text-sm font-bold text-yellow-900">{{ 100 - ($company->gph_late_2_percent ?? 70) }}%</span>
                     </div>
                 </div>
 
@@ -98,8 +98,8 @@
                         </div>
                     </div>
                     <div class="mt-3 pt-2 border-t border-orange-200/60 flex justify-between items-center">
-                        <span class="text-xs text-orange-700">GPH</span>
-                        <span class="text-sm font-bold text-orange-900">{{ $company->gph_late_3_percent ?? 65 }}%</span>
+                        <span class="text-xs text-orange-700">Potongan GPH</span>
+                        <span class="text-sm font-bold text-orange-900">{{ 100 - ($company->gph_late_3_percent ?? 65) }}%</span>
                     </div>
                 </div>
 
@@ -115,8 +115,8 @@
                         </div>
                     </div>
                     <div class="mt-3 pt-2 border-t border-red-200/60 flex justify-between items-center">
-                        <span class="text-xs text-red-700">GPH</span>
-                        <span class="text-sm font-bold text-red-900">{{ $company->gph_late_4_percent ?? 0 }}%</span>
+                        <span class="text-xs text-red-700">Potongan GPH</span>
+                        <span class="text-sm font-bold text-red-900">{{ 100 - ($company->gph_late_4_percent ?? 0) }}%</span>
                     </div>
                 </div>
             </div>
@@ -222,8 +222,8 @@
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
-                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Waktu</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Karyawan</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Jam Datang</th>
                             <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                             <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
                         </tr>
@@ -247,39 +247,135 @@
                                     </div>
                                     <div class="ml-4">
                                         <div class="text-sm font-medium text-gray-900">{{ $activity->user->name ?? 'Unknown' }}</div>
-                                        <div class="text-sm text-gray-500">{{ $activity->user->email ?? '-' }}</div>
+                                        <div class="text-sm text-gray-500">{{ $activity->user->department ?? '-' }}</div>
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
-                                {{ $activity->time_in ? \Carbon\Carbon::parse($activity->time_in)->format('H:i') . ' WIB' : '-' }}
+                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                                {{ $activity->time_in ? \Carbon\Carbon::parse($activity->time_in)->format('H:i') : '-' }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center text-sm">
-                                @if($activity->status == 'permission')
-                                    <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full text-white bg-red-600">IZIN</span>
+                                @if($activity->time_in)
+                                    @php
+                                        // Check manual override flag first
+                                        if (!$activity->is_late) {
+                                            // Manually set to "Tepat Waktu"
+                                            $statusDisplay = 'tepat_waktu';
+                                        } else {
+                                            // Calculate lateness level based on time
+                                            $timeIn = \Carbon\Carbon::parse($activity->time_in);
+                                            $company = \App\Models\Company::first();
+                                            $standardTime = \Carbon\Carbon::parse($company->time_in ?? '08:00')->setDate($timeIn->year, $timeIn->month, $timeIn->day)->addSeconds(59);
+                                            $late1 = \Carbon\Carbon::parse($company->late_threshold_1 ?? '08:30')->setDate($timeIn->year, $timeIn->month, $timeIn->day)->addSeconds(59);
+                                            $late2 = \Carbon\Carbon::parse($company->late_threshold_2 ?? '09:00')->setDate($timeIn->year, $timeIn->month, $timeIn->day)->addSeconds(59);
+                                            $late3 = \Carbon\Carbon::parse($company->late_threshold_3 ?? '12:00')->setDate($timeIn->year, $timeIn->month, $timeIn->day)->addSeconds(59);
+                                            
+                                            if ($timeIn->gt($standardTime) && $timeIn->lte($late1)) {
+                                                $statusDisplay = 'terlambat_1';
+                                            } elseif ($timeIn->gt($late1) && $timeIn->lte($late2)) {
+                                                $statusDisplay = 'terlambat_2';
+                                            } elseif ($timeIn->gt($late2) && $timeIn->lte($late3)) {
+                                                $statusDisplay = 'terlambat_3';
+                                            } elseif ($timeIn->gt($late3)) {
+                                                $statusDisplay = 'setengah_hari';
+                                            } else {
+                                                $statusDisplay = 'tepat_waktu';
+                                            }
+                                        }
+                                    @endphp
+                                    
+                                    @if($statusDisplay == 'tepat_waktu')
+                                        <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                            </svg>
+                                            Tepat Waktu
+                                        </span>
+                                    @elseif($statusDisplay == 'terlambat_1')
+                                        <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                            Terlambat 1
+                                        </span>
+                                    @elseif($statusDisplay == 'terlambat_2')
+                                        <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                            Terlambat 2
+                                        </span>
+                                    @elseif($statusDisplay == 'terlambat_3')
+                                        <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                            Terlambat 3
+                                        </span>
+                                    @elseif($statusDisplay == 'setengah_hari')
+                                        <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                            Setengah Hari
+                                        </span>
+                                    @endif
+                                @elseif($activity->status == 'permission')
+                                    <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                        </svg>
+                                        Izin
+                                    </span>
                                 @elseif($activity->status == 'sick')
-                                    <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full text-white bg-red-600">SAKIT</span>
+                                    <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                                        </svg>
+                                        Sakit
+                                    </span>
                                 @elseif($activity->status == 'leave')
-                                    <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full text-white bg-red-600">CUTI</span>
+                                    <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                        </svg>
+                                        Cuti
+                                    </span>
                                 @elseif($activity->status == 'alpha')
-                                    <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full text-white bg-red-600">ALPHA</span>
+                                    <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                        Alpha
+                                    </span>
                                 @elseif($activity->status == 'out_of_town')
-                                    <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full text-white bg-red-600">DLK</span>
-                                @elseif($activity->is_late)
-                                    <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                        Terlambat
+                                    <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                        </svg>
+                                        DLK
                                     </span>
                                 @else
-                                    <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                        Hadir
+                                    <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-600">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        Belum Absen
                                     </span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
-                                @if(in_array($activity->status, ['permission', 'sick', 'leave', 'alpha', 'out_of_town']))
-                                    -
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                @if($activity->note)
+                                    <div class="max-w-xs mx-auto">
+                                        <div class="inline-flex items-start gap-1.5 text-xs text-gray-600 bg-gray-50 px-3 py-2 rounded-lg border border-gray-200">
+                                            <svg class="w-3.5 h-3.5 text-gray-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path>
+                                            </svg>
+                                            <span class="text-left">{{ Str::limit($activity->note, 50) }}</span>
+                                        </div>
+                                    </div>
                                 @else
-                                    {{ $activity->is_late ? 'Terlambat' : 'Tepat Waktu' }}
+                                    <span class="text-xs text-gray-400 italic">-</span>
                                 @endif
                             </td>
                         </tr>
@@ -551,10 +647,23 @@
             </div>
             
             <!-- Legend Kecil -->
-            <div class="mt-4 flex gap-3 text-[10px] text-gray-400 justify-center">
-                <div class="flex items-center gap-1"><div class="w-2 h-2 rounded-full bg-green-500"></div> Tepat Waktu</div>
-                <div class="flex items-center gap-1"><div class="w-2 h-2 rounded-full bg-yellow-500"></div> Terlambat</div>
-                <div class="flex items-center gap-1"><div class="w-2 h-2 rounded-full bg-red-600"></div> Tidak Hadir</div>
+            <div class="mt-4 flex flex-wrap gap-2 text-[10px] text-gray-500 justify-center">
+                <div class="flex items-center gap-1">
+                    <div class="w-2 h-2 rounded-full bg-green-500"></div>
+                    <span>Tepat Waktu</span>
+                </div>
+                <div class="flex items-center gap-1">
+                    <div class="w-2 h-2 rounded-full bg-yellow-500"></div>
+                    <span>Terlambat</span>
+                </div>
+                <div class="flex items-center gap-1">
+                    <div class="w-2 h-2 rounded-full bg-orange-500"></div>
+                    <span>Setengah Hari</span>
+                </div>
+                <div class="flex items-center gap-1">
+                    <div class="w-2 h-2 rounded-full bg-red-600"></div>
+                    <span>Cuti/Izin/Sakit/Alpha</span>
+                </div>
             </div>
 
             <!-- Detail Modal (Sheet) -->
@@ -670,9 +779,47 @@
             getAttendanceStatusColor(date) {
                 const data = this.attendances[this.getDateString(date)];
                 if (!data) return '';
-                if (['sick', 'permission', 'leave', 'alpha', 'out_of_town'].includes(data.status)) return 'bg-red-600';
-                if (data.is_late) return 'bg-yellow-500';
-                return 'bg-green-500';
+                
+                // Check special statuses first
+                if (['sick', 'permission', 'leave', 'alpha', 'out_of_town'].includes(data.status)) {
+                    return 'bg-red-600';
+                }
+                
+                // Check manual override (is_late flag) - priority check
+                if (!data.is_late) {
+                    // Manually marked as "on time"
+                    return 'bg-green-500';
+                }
+                
+                // Calculate lateness level based on actual time
+                if (data.time_in) {
+                    // Use company thresholds from PHP
+                    const companyTimeIn = '{{ $company->time_in ?? "08:00" }}';
+                    const late1Threshold = '{{ $company->late_threshold_1 ?? "08:30" }}';
+                    const late2Threshold = '{{ $company->late_threshold_2 ?? "09:00" }}';
+                    const late3Threshold = '{{ $company->late_threshold_3 ?? "12:00" }}';
+                    
+                    // Convert time to minutes for accurate comparison
+                    const toMinutes = (timeStr) => {
+                        const [h, m] = timeStr.substring(0, 5).split(':').map(Number); // Ensure HH:mm format
+                        return h * 60 + m;
+                    };
+                    
+                    const timeInMin = toMinutes(data.time_in);
+                    const standardTimeMin = toMinutes(companyTimeIn);
+                    const late3Min = toMinutes(late3Threshold);
+                    
+                    if (timeInMin <= standardTimeMin) {
+                        return 'bg-green-500'; // Tepat Waktu
+                    } else if (timeInMin > late3Min) {
+                        return 'bg-orange-500'; // Setengah Hari
+                    } else {
+                        return 'bg-yellow-500'; // Terlambat 1, 2, or 3
+                    }
+                }
+                
+                // Default to late
+                return 'bg-yellow-500';
             },
             getStatusLabel(status) {
                 const map = { 'sick': 'SAKIT', 'permission': 'IZIN', 'leave': 'CUTI', 'alpha': 'ALPHA', 'out_of_town': 'DLK' };

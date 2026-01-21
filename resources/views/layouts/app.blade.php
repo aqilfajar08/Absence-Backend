@@ -187,6 +187,7 @@
 
     @if(!$isAdmin)
         @include('components.bottom-nav')
+        @include('components.install-pwa-prompt')
     @endif
 
     <!-- Global Logout Form -->

@@ -15,7 +15,9 @@ Route::get('/', function () {
     return Auth::check() ? redirect()->route('home') : view('pages.auth.login');
 })->name('login');
 
-Route::post('/login', [LoginController::class, 'login'])->name('login.attempt');
+Route::post('/login', [LoginController::class, 'login'])
+    ->middleware('throttle:5,1') // 5 attempts per 1 minute
+    ->name('login.attempt');
 
 Route::get('/fix-lateness', function () {
     $company = \App\Models\Company::first();

@@ -21,3 +21,16 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+
+# Firebase Credentials (JANGAN DI-PUSH!)
+/storage/app/firebase-auth.json
+
+# Uploaded Files
+/storage/app/public/avatars/*
+/storage/app/public/images/*
+!/storage/app/public/avatars/.gitkeep
+!/storage/app/public/images/.gitkeep
+
+# Cache and Logs
+/storage/logs/*
+!/storage/logs/.gitkeep
