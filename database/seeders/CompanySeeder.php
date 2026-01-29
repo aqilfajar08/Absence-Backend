@@ -18,8 +18,8 @@ class CompanySeeder extends Seeder
             [
                 'name' => 'PT. Kasau Sinar Samudera',
                 'address' => 'Komp. Balikpapan Baru B5, Damai, Kecamatan Balikpapan Selatan, Kota Balikpapan, Kalimantan Timur 76133',
-                'latitude' => '-1.24646295687147',
-                'longitude' => '116.8596677215559',
+                'latitude' => '-1.2466006096285236',
+                'longitude' => '116.85965676089455',
                 'radius_km' => '1',
                 'time_in' => '08:00',
                 'time_out' => '17:00',

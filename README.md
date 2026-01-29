@@ -4,20 +4,19 @@ Sistem presensi karyawan berbasis Laravel dengan QR Code, GPS tracking, dan lapo
 
 ## Fitur Utama
 
-- **Absensi QR Code** - Check-in/Check-out dengan scan QR Code
+- **Absensi QR Code** - Absen masuk dan absen pulang dengan scan QR Code
 - **GPS Tracking** - Validasi lokasi karyawan dengan radius kantor
-- **Multi-Role System** - Administrator, Resepsionis, dan Karyawan
-- **Laporan Excel** - Export laporan absensi bulanan
-- **Notifikasi Push** - Firebase Cloud Messaging untuk pengingat
+- **Multi-Role System** - Admin, Resepsionis, dan Karyawan
+- **Laporan Excel** - Ekspor laporan absensi bulanan
+- **Notifikasi Otomatis** - Reminder checkout otomatis 10 menit sebelum dan saat jam pulang
 - **Kalender Riwayat** - Visualisasi kehadiran bulanan
 - **Pengaturan Fleksibel** - Konfigurasi jam kerja dan potongan
 
 ## Tech Stack
 
-- **Backend**: Laravel 11.x
+- **Backend**: Laravel 11
 - **Frontend**: Blade Templates + Tailwind CSS + Alpine.js
 - **Database**: MySQL
-- **Mobile**: Flutter (repository terpisah)
 - **Notifications**: Firebase Cloud Messaging
 
 ## Persyaratan Sistem
@@ -113,11 +112,22 @@ php artisan serve
 
 Akses: `http://localhost:8000`
 
+### 10. Setup Notifikasi Otomatis (Optional)
+
+Untuk mengaktifkan reminder checkout otomatis:
+
+```bash
+# Windows - Buat task scheduler yang menjalankan setiap menit:
+# Buat file run-scheduler.bat dengan isi:
+# cd d:\KP\Absence-Backend && php artisan schedule:run
+
+# Atau jalankan manual untuk testing:
+php artisan schedule:run
+```
+
+**Lihat panduan lengkap**: `NOTIFIKASI_CHECKOUT.md`
+
 ---
-
-## Deployment ke Production
-
-**PENTING**: Baca file `DEPLOYMENT_CHECKLIST.md` untuk panduan lengkap deployment!
 
 ### Quick Steps:
 
@@ -140,38 +150,6 @@ php artisan view:cache
 chmod -R 775 storage bootstrap/cache
 chown -R www-data:www-data storage bootstrap/cache
 ```
-
----
-
-## Struktur Project
-
-```
-├── app/
-│   ├── Http/Controllers/      # Controllers untuk semua fitur
-│   ├── Models/                 # Eloquent Models
-│   ├── Exports/                # Excel export logic
-│   └── Http/Middleware/        # Custom middleware
-├── database/
-│   ├── migrations/             # Database schema
-│   └── seeders/                # Database seeders
-├── resources/
-│   ├── views/                  # Blade templates
-│   └── js/                     # JavaScript files
-├── routes/
-│   ├── web.php                 # Web routes
-│   └── api.php                 # API routes (untuk mobile)
-├── public/                     # Public assets
-├── storage/
-│   ├── app/
-│   │   ├── public/avatars/    # User profile images
-│   │   └── firebase-auth.json # Firebase credentials
-│   └── logs/                   # Application logs
-├── .env.example                # Environment template
-├── .env.production             # Production environment template
-└── DEPLOYMENT_CHECKLIST.md     # Deployment guide
-```
-
----
 
 ## Keamanan
 
@@ -208,16 +186,16 @@ chown -R www-data:www-data storage bootstrap/cache
 
 ### Sistem Keterlambatan
 
-- **Terlambat 1**: 08:01 - 08:30 (Potongan GPH kecil)
-- **Terlambat 2**: 08:31 - 09:00 (Potongan GPH sedang)
-- **Terlambat 3**: 09:01 - 12:00 (Potongan GPH besar)
-- **Setengah Hari**: > 12:00 (Potongan GPH maksimal)
+- **Terlambat 1**: 08:01 - 08:30 (Potongan GPH 25%)
+- **Terlambat 2**: 08:31 - 09:00 (Potongan GPH 30%)
+- **Terlambat 3**: 09:01 - 12:00 (Potongan GPH 35%)
+- **Setengah Hari**: > 12:00 (Potongan GPH 100%)
 - Threshold dan persentase potongan bisa diatur admin
 
-### Laporan & Export
+### Laporan & Ekspor
 
 - Filter berdasarkan tanggal dan nama
-- Export ke Excel dengan format lengkap
+- Ekspor ke Excel dengan format lengkap
 - Perhitungan otomatis potongan gaji
 - Visualisasi calendar view
 
@@ -273,16 +251,6 @@ npm run build
 php artisan view:clear
 ```
 
----
-
-## Support & Documentation
-
-- **Deployment Guide**: Lihat `DEPLOYMENT_CHECKLIST.md`
-- **SRS Document**: Lihat `docs/SRS_Sistem_Presensi.md`
-- **API Documentation**: [Coming Soon]
-
----
-
 ## License
 
 This project is proprietary software. All rights reserved.
@@ -291,20 +259,5 @@ This project is proprietary software. All rights reserved.
 
 ## Credits
 
-Developed for Kantor Kasau TNI AU  
-© 2026 - All Rights Reserved
-
----
-
-## Changelog
-
-### Version 1.0.0 (January 2026)
-
-- Initial release
-- QR Code attendance system
-- GPS tracking
-- Multi-role authorization
-- Excel export
-- Lateness calculation system
-- Firebase notifications
-- Calendar history view
+Developed for Kantor KASAU Sinar Samudera  
+© 2025 - All Rights Reserved

@@ -57,11 +57,13 @@
             @for($i = 1; $i <= $daysInMonth; $i++)
                 @php
                     $currentDate = \Carbon\Carbon::createFromDate($year, $month, $i);
-                    $isSunday = $currentDate->isSunday();
-                    $headerColor = $isSunday ? '#ff0000' : '#d9d9d9';
-                    $textColor = $isSunday ? '#ffffff' : '#000000';
+                    // Safe weekend check
+                    $myDay = $currentDate->dayOfWeek;
+                    $isWeekend = ($myDay == 0 || $myDay == 6);
+                    $headerColor = $isWeekend ? '#ff0000' : '#d9d9d9';
+                    $textColor = $isWeekend ? '#ffffff' : '#000000';
                 @endphp
-                <th style="border: 1px solid #000000; font-weight: bold; text-align: center; background-color: {{ $headerColor}}; color: {{ $textColor }}; width: 8px;">{{ $i }}</th>
+                <th style="border: 1px solid #000000; font-weight: bold; text-align: center; background-color: {{ $headerColor }}; color: {{ $textColor }}; width: 8px;">{{ $i }}</th>
             @endfor
 
             {{-- Headers under Jumlah --}}
@@ -108,7 +110,10 @@
                     @php
                         $currentDate = \Carbon\Carbon::createFromDate($year, $month, $i);
                         $dateString = $currentDate->format('Y-m-d');
-                        $isSunday = $currentDate->isSunday();
+                        
+                        // Safe weekend check
+                        $myDay = $currentDate->dayOfWeek;
+                        $isWeekend = ($myDay == 0 || $myDay == 6);
                         
                         // Check Attendance
                         $attendance = $user->attendance->first(function($att) use ($dateString) {
@@ -118,7 +123,7 @@
                         $permit = $user->permits->firstWhere('date_permission', $dateString);
                         
                         $cellContent = '';
-                        $bgColor = $isSunday ? '#ff0000' : '#ffffff'; 
+                        $bgColor = $isWeekend ? '#ff0000' : '#ffffff'; 
                         $textColor = '#000000';
 
                         // Logic Priorities
@@ -224,9 +229,9 @@
                                 $hadirCount += 1; 
                             }
                         } else {
-                            if (!$isSunday) {
+                            if (!$isWeekend) {
                                 if (\Carbon\Carbon::parse($user->created_at)->lte($currentDate)) {
-                                     if ($currentDate->lte(now())) {
+                                     if ($currentDate->lte(\Carbon\Carbon::now('Asia/Makassar'))) {
                                          $alpaCount++;
                                          $cellContent = 'ALPHA';
                                          $bgColor = '#5B9BD5'; // Alpa Color
@@ -272,7 +277,7 @@
     </tbody>
 </table>
 
-{{-- SPACER ROW --}}
+{{-- SPACER TABLE --}}
 <table style="border-collapse: collapse; width: 100%; font-size: 10px;">
     <tr><td colspan="30" style="height: 20px;"></td></tr>
     
@@ -297,7 +302,7 @@
     {{-- Row 2: Legend Item 1 + Deduction Header Row 2 --}}
     <tr style="height: 30px;">
         <td style="background-color: #ff0000; border: 1px solid #000;"></td>
-        <td>Hari Libur</td>
+        <td>Hari Libur (Sabtu & Minggu)</td>
         <td></td>
         {{-- Deduction Sub Headers --}}
         <th colspan="2" style="border: 1px solid #000; font-weight: bold; text-align: center; background-color: #548235;">I</th>
@@ -331,7 +336,9 @@
             for($i = 1; $i <= $daysInMonth; $i++) {
                 $currentDate = \Carbon\Carbon::createFromDate($year, $month, $i);
                 $dateString = $currentDate->format('Y-m-d');
-                $isSunday = $currentDate->isSunday();
+                $myDay = $currentDate->dayOfWeek;
+                $isWeekend = ($myDay == 0 || $myDay == 6);
+                
                 $attendance = $user->attendance->first(function($att) use ($dateString) {
                     return \Carbon\Carbon::parse($att->date_attendance)->format('Y-m-d') === $dateString;
                 });
@@ -358,7 +365,7 @@
                     elseif ($attendance->status == 'alpha') $alpaCount++;
                     elseif ($attendance->status == 'sick') $sakitCount++;
                 } else {
-                    if (!$isSunday && \Carbon\Carbon::parse($user->created_at)->lte($currentDate) && $currentDate->lte(now())) {
+                    if (!$isWeekend && \Carbon\Carbon::parse($user->created_at)->lte($currentDate) && $currentDate->lte(\Carbon\Carbon::now('Asia/Makassar'))) {
                         $alpaCount++;
                     }
                 }
@@ -418,4 +425,3 @@
         </tr>
     @endfor
 </table>
-

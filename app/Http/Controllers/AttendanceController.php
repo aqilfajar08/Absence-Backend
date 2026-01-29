@@ -83,7 +83,7 @@ class AttendanceController extends Controller
 
     public function export(Request $request) 
     {
-        $filename = 'laporan-absensi-' . date('d-m-Y-H-i') . '.xlsx';
+        $filename = 'laporan-absensi-' . Carbon::now('Asia/Makassar')->format('d-m-Y-H-i') . '.xlsx';
         return Excel::download(new AttendanceExport($request), $filename);
     }
 
@@ -167,7 +167,7 @@ class AttendanceController extends Controller
         // Validasi Token QR
         // Jika QR Code adalah "CHECKOUT_BUTTON", lewati validasi token (hanya untuk checkout)
         if ($request->qr_code !== 'CHECKOUT_BUTTON') {
-            $validToken = 'KASAU-ABSENSI-' . date('Y-m-d');
+            $validToken = 'KASAU-ABSENSI-' . Carbon::now('Asia/Makassar')->format('Y-m-d');
             if ($request->qr_code !== $validToken) {
                 return response()->json([
                     'status' => 'error',
@@ -180,8 +180,9 @@ class AttendanceController extends Controller
 
         /** @var \App\Models\User $user */
         $user = Auth::user();
-        $today = date('Y-m-d');
-        $now = date('H:i'); // Menggunakan H:i:s jika perlu presisi detik
+        $carbonNow = Carbon::now('Asia/Makassar');
+        $today = $carbonNow->format('Y-m-d');
+        $now = $carbonNow->format('H:i');
         
         $company = Company::first();
         
@@ -295,8 +296,9 @@ class AttendanceController extends Controller
             }
         }
 
-        $today = date('Y-m-d');
-        $now = date('H:i:s');
+        $carbonNow = Carbon::now('Asia/Makassar');
+        $today = $carbonNow->format('Y-m-d');
+        $now = $carbonNow->format('H:i:s');
 
         $attendance = Attendance::where('user_id', $user->id)
                                 ->where('date_attendance', $today)

@@ -731,6 +731,76 @@
             <!-- Backdrop -->
             <div x-show="isModalOpen" @click="isModalOpen = false" x-transition.opacity class="fixed inset-0 bg-black/20 z-[50] backdrop-blur-[1px]" style="display: none;"></div>
         </div>
+
+        <!-- IN-APP CHECKOUT REMINDER LOGIC -->
+        <div x-data="checkoutReminderApp()" x-init="init()"></div>
+        <script>
+            function checkoutReminderApp() {
+                return {
+                    // Inject PHP data: Company checkout time & User checkout status
+                    timeOut: '{{ $company->time_out ?? "17:00" }}',
+                    isCheckedOut: @json(auth()->user()->attendance()->whereDate('date_attendance', today())->whereNotNull('time_out')->exists()),
+                    isCheckedIn: @json(auth()->user()->attendance()->whereDate('date_attendance', today())->whereNotNull('time_in')->exists()),
+                    
+                    init() {
+                        // Only run if user checked in BUT NOT checked out
+                        if (this.isCheckedIn && !this.isCheckedOut) {
+                            this.checkTime(); // Run immediately
+                            setInterval(() => this.checkTime(), 30000); // Check every 30 seconds
+                        }
+                    },
+
+                    checkTime() {
+                        const now = new Date();
+                        const [hours, minutes] = this.timeOut.split(':').map(Number);
+                        
+                        const checkoutTime = new Date();
+                        checkoutTime.setHours(hours, minutes, 0, 0);
+
+                        const diffMinutes = (now - checkoutTime) / 1000 / 60; // Difference in minutes
+
+                        // Logic 1: 10 minutes BEFORE checkout (Range: -10 to -9)
+                        if (diffMinutes >= -10 && diffMinutes < -9 && !sessionStorage.getItem('reminded_10_before')) {
+                            this.showSwal('Persiapan Pulang!', '10 menit lagi jam pulang. Jangan lupa absen ya!', 'info');
+                            sessionStorage.setItem('reminded_10_before', 'true');
+                        }
+
+                        // Logic 2: AT checkout time (Range: 0 to 1)
+                        if (diffMinutes >= 0 && diffMinutes < 1 && !sessionStorage.getItem('reminded_on_time')) {
+                            this.showSwal('Waktunya Pulang!', 'Sudah jam pulang nih. Hati-hati di jalan & jangan lupa absen!', 'success');
+                            sessionStorage.setItem('reminded_on_time', 'true');
+                        }
+
+                        // Logic 3: 10 minutes AFTER checkout (Range: 10 to 11)
+                        if (diffMinutes >= 10 && diffMinutes < 11 && !sessionStorage.getItem('reminded_10_after')) {
+                            this.showSwal('Belum Absen Pulang?', 'Sudah lewat 10 menit dari jam pulang. Yuk absen sekarang!', 'warning');
+                            sessionStorage.setItem('reminded_10_after', 'true');
+                        }
+                        
+                        // Logic 4: Late Reminder (e.g. 1 hour later) - Optional, preventing spam if user opens app late at night
+                        // We rely on session storage so it shows only once per session per threshold
+                    },
+
+                    showSwal(title, text, icon) {
+                        Swal.fire({
+                            title: title,
+                            text: text,
+                            icon: icon,
+                            timer: 5000,
+                            timerProgressBar: true,
+                            toast: true,
+                            position: 'top-end',
+                            showConfirmButton: false
+                        });
+                        
+                        // Play notification sound if possible
+                        // const audio = new Audio('/sounds/notification.mp3'); 
+                        // audio.play().catch(e => console.log('Audio autoplay blocked'));
+                    }
+                }
+            }
+        </script>
+
     </div>
 @endif
 @endsection

@@ -23,15 +23,27 @@ class AppServiceProvider extends ServiceProvider
         Paginator::useBootstrapFive();
         \Carbon\Carbon::setLocale('id');
 
-        // Fix CSS/Assets hilang saat pakai Ngrok
-        // Kita paksa URL Root agar menggunakan domain Ngrok, bukan IP lokal (127.0.0.1/192.168.x.x)
-        if (isset($_SERVER['HTTP_X_FORWARDED_HOST']) && str_contains($_SERVER['HTTP_X_FORWARDED_HOST'], 'ngrok')) {
-            $url = 'https://' . $_SERVER['HTTP_X_FORWARDED_HOST'];
-            \Illuminate\Support\Facades\URL::forceRootUrl($url);
-            \Illuminate\Support\Facades\URL::forceScheme('https');
-        } elseif (str_contains(request()->url(), 'ngrok-free.app')) {
-            // Fallback jika header tidak terbaca tapi URL terdeteksi
-            \Illuminate\Support\Facades\URL::forceScheme('https');
+        // Fix CSS/Assets hilang saat pakai Tunneling Service (Ngrok, Cloudflare, LocalTunnel)
+        // Kita paksa URL Root agar menggunakan domain tunnel, bukan IP lokal
+        $tunnelDomains = ['ngrok', 'trycloudflare.com', 'loca.lt'];
+        
+        if (isset($_SERVER['HTTP_X_FORWARDED_HOST'])) {
+            foreach ($tunnelDomains as $domain) {
+                if (str_contains($_SERVER['HTTP_X_FORWARDED_HOST'], $domain)) {
+                    $url = 'https://' . $_SERVER['HTTP_X_FORWARDED_HOST'];
+                    \Illuminate\Support\Facades\URL::forceRootUrl($url);
+                    \Illuminate\Support\Facades\URL::forceScheme('https');
+                    break;
+                }
+            }
+        }
+        
+        // Fallback: Deteksi dari URL request
+        foreach ($tunnelDomains as $domain) {
+            if (str_contains(request()->url(), $domain)) {
+                \Illuminate\Support\Facades\URL::forceScheme('https');
+                break;
+            }
         }
     }
 }
