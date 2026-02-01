@@ -38,10 +38,13 @@ class QrCode extends Model
      */
     public function isValid(): bool
     {
+        $now = Carbon::now('Asia/Makassar');
+        $validDate = Carbon::parse($this->valid_date)->setTimezone('Asia/Makassar');
+        
         return $this->is_active 
-            && $this->valid_date->isToday() 
-            && Carbon::now()->hour >= 5 // Valid from 05:00 WITA
-            && Carbon::now()->lessThan($this->expires_at);
+            && $validDate->isToday() 
+            && $now->hour >= 5 // Valid from 05:00 WITA
+            && $now->lessThan($this->expires_at);
     }
 
     /**
@@ -59,8 +62,8 @@ class QrCode extends Model
     public static function generateUniqueCode(): string
     {
         do {
-            // Format: YYYYMMDD-RANDOM8CHARS
-            $code = date('Ymd') . '-' . strtoupper(substr(md5(uniqid(rand(), true)), 0, 8));
+            // Format: YYYYMMDD-RANDOM8CHARS (using Asia/Makassar timezone)
+            $code = Carbon::now('Asia/Makassar')->format('Ymd') . '-' . strtoupper(substr(md5(uniqid(rand(), true)), 0, 8));
         } while (self::where('code', $code)->exists());
 
         return $code;

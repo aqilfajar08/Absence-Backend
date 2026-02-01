@@ -5,13 +5,14 @@ namespace App\Http\Controllers;
 use App\Models\Attendance;
 use App\Models\User;
 use App\Models\Company;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class HomeController extends Controller
 {
     public function index() {
-        $today = date('Y-m-d');
+        $today = Carbon::now('Asia/Makassar')->format('Y-m-d');
         $company = Company::first(); // Data perusahaan
 
         $totalEmployees = User::count();
@@ -45,7 +46,7 @@ class HomeController extends Controller
             
             // History Absensi (Untuk Kalender)
             $historyAttendances = Attendance::where('user_id', $user->id)
-                                    ->whereYear('date_attendance', date('Y'))
+                                    ->whereYear('date_attendance', Carbon::now('Asia/Makassar')->format('Y'))
                                     ->get()
                                     ->mapWithKeys(function ($item) {
                                         return [\Carbon\Carbon::parse($item->date_attendance)->format('Y-m-d') => $item];

@@ -19,7 +19,7 @@ class AttendanceController extends Controller
         
         // Check if filtering by a SINGLE day (e.g., 'Today' or custom same start/end)
         $isSingleDay = ($startDate && $endDate && $startDate === $endDate) || (!$startDate && !$endDate); 
-        $targetDate = $startDate ?? date('Y-m-d');
+        $targetDate = $startDate ?? Carbon::now('Asia/Makassar')->format('Y-m-d');
         
         $query = Attendance::with(['user', 'user.permits' => function($q) {
         $q->where('is_approved', 'approved');
@@ -75,7 +75,7 @@ class AttendanceController extends Controller
             'date_attendance' => $request->date_attendance,
             'status' => $request->status,
             'note' => $request->note,
-            'time_in' => ($request->status === 'present') ? date('H:i:s') : null,
+            'time_in' => ($request->status === 'present') ? Carbon::now('Asia/Makassar')->format('H:i:s') : null,
             'latlon_in' => null, // Manual entry
             'is_late' => false,
         ]);
@@ -134,7 +134,7 @@ class AttendanceController extends Controller
     public function scan()
     {
         $attendance = Attendance::where('user_id', Auth::id())
-                                ->where('date_attendance', date('Y-m-d'))
+                                ->where('date_attendance', Carbon::now('Asia/Makassar')->format('Y-m-d'))
                                 ->first();
         return view('pages.attendances.scan', compact('attendance'));
     }
@@ -142,12 +142,12 @@ class AttendanceController extends Controller
     public function createQr()
     {
         // Token hari ini (bisa diperkuat dengan salt/hash jika perlu)
-        $qrToken = 'KASAU-ABSENSI-' . date('Y-m-d');
+        $qrToken = 'KASAU-ABSENSI-' . Carbon::now('Asia/Makassar')->format('Y-m-d');
         
         // Data kehadiran hari ini untuk monitoring resepsionis
         // Filter: Hanya yang sudah absen (Hadir/Terlambat), abaikan Izin/Cuti/dll (yang time_in null)
         $todayAttendances = Attendance::with('user')
-            ->where('date_attendance', date('Y-m-d'))
+            ->where('date_attendance', Carbon::now('Asia/Makassar')->format('Y-m-d'))
             ->whereNotNull('time_in')
             ->orderBy('updated_at', 'desc')
             ->get();
@@ -406,7 +406,7 @@ class AttendanceController extends Controller
     {
         // Ambil data absensi user yang login (misal 1 tahun terakhir)
         $attendances = Attendance::where('user_id', Auth::id())
-                                ->whereYear('date_attendance', date('Y'))
+                                ->whereYear('date_attendance', Carbon::now('Asia/Makassar')->format('Y'))
                                 ->get()
                                 ->mapWithKeys(function ($item) {
                                     return [\Carbon\Carbon::parse($item->date_attendance)->format('Y-m-d') => $item];

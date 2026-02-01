@@ -20,7 +20,7 @@ class QrCodeController extends Controller
         // Example: if (!$user->hasRole('security') && !$user->hasRole('admin')) { ... }
 
         // Deactivate any existing QR codes for today
-        QrCode::where('valid_date', Carbon::today())
+        QrCode::where('valid_date', Carbon::today('Asia/Makassar'))
             ->where('is_active', true)
             ->update(['is_active' => false]);
 
@@ -30,9 +30,9 @@ class QrCodeController extends Controller
         $qrCode = QrCode::create([
             'generated_by' => $user->id,
             'code' => $code,
-            'valid_date' => Carbon::today(),
-            'generated_at_time' => Carbon::now()->format('H:i:s'),
-            'expires_at' => Carbon::today()->setTime(18, 0, 0), // Expire at 18:00 (6 PM)
+            'valid_date' => Carbon::today('Asia/Makassar'),
+            'generated_at_time' => Carbon::now('Asia/Makassar')->format('H:i:s'),
+            'expires_at' => Carbon::today('Asia/Makassar')->setTime(18, 0, 0), // Expire at 18:00 (6 PM)
             'is_active' => true,
         ]);
 
@@ -94,9 +94,9 @@ class QrCodeController extends Controller
      */
     public function getCurrent(Request $request)
     {
-        $qrCode = QrCode::where('valid_date', Carbon::today())
+        $qrCode = QrCode::where('valid_date', Carbon::today('Asia/Makassar'))
             ->where('is_active', true)
-            ->where('expires_at', '>', Carbon::now())
+            ->where('expires_at', '>', Carbon::now('Asia/Makassar'))
             ->first();
 
         if (!$qrCode) {
@@ -123,7 +123,7 @@ class QrCodeController extends Controller
      */
     public function deactivate(Request $request)
     {
-        $qrCode = QrCode::where('valid_date', Carbon::today())
+        $qrCode = QrCode::where('valid_date', Carbon::today('Asia/Makassar'))
             ->where('is_active', true)
             ->first();
 

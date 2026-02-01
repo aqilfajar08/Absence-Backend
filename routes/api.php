@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CompanyController;
 use App\Http\Controllers\Api\PermissionController;
 use App\Http\Controllers\Api\QrCodeController;
+use App\Http\Controllers\Api\TimeController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -15,6 +16,9 @@ Route::get('/user', function (Request $request) {
 
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
+
+// Time API - get current server time (public endpoint, no auth required)
+Route::get('/time/current', [TimeController::class, 'getCurrentTime']);
 
 // Face Detection Routes
 Route::post('/user/register-face', [AuthController::class, 'registerFace'])->middleware('auth:sanctum');

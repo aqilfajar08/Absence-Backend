@@ -20,6 +20,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Force PHP timezone to Asia/Makassar (WITA)
+        // This ensures all date() and time() functions use the correct timezone
+        // regardless of server OS timezone settings
+        date_default_timezone_set('Asia/Makassar');
+        
         Paginator::useBootstrapFive();
         \Carbon\Carbon::setLocale('id');
 
