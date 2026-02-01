@@ -21,7 +21,9 @@ class AttendanceController extends Controller
         $isSingleDay = ($startDate && $endDate && $startDate === $endDate) || (!$startDate && !$endDate); 
         $targetDate = $startDate ?? date('Y-m-d');
         
-        $query = Attendance::with('user');
+        $query = Attendance::with(['user', 'user.permits' => function($q) {
+        $q->where('is_approved', 'approved');
+    }]);
 
         if ($request->filled('start_date') && $request->filled('end_date')) {
             $query->whereBetween('date_attendance', [$request->start_date, $request->end_date]);

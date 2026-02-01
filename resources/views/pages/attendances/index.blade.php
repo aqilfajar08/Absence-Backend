@@ -310,29 +310,23 @@
                         <td class="px-6 py-4 whitespace-nowrap text-center">
                             @if($attendance->time_in)
                                 @php
-                                    // Check manual override flag first
-                                    if (!$attendance->is_late) {
-                                        // Manually set to "Tepat Waktu"
+                                    // Calculate lateness level based on time (always, don't rely on is_late field)
+                                    $timeIn = \Carbon\Carbon::parse($attendance->time_in);
+                                    $standardTime = \Carbon\Carbon::parse($company->time_in ?? '08:00')->setDate($timeIn->year, $timeIn->month, $timeIn->day);
+                                    $late1 = \Carbon\Carbon::parse($company->late_threshold_1 ?? '08:30')->setDate($timeIn->year, $timeIn->month, $timeIn->day)->addSeconds(59);
+                                    $late2 = \Carbon\Carbon::parse($company->late_threshold_2 ?? '09:00')->setDate($timeIn->year, $timeIn->month, $timeIn->day)->addSeconds(59);
+                                    $late3 = \Carbon\Carbon::parse($company->late_threshold_3 ?? '12:00')->setDate($timeIn->year, $timeIn->month, $timeIn->day)->addSeconds(59);
+                                    
+                                    if ($timeIn->lte($standardTime)) {
                                         $statusDisplay = 'tepat_waktu';
+                                    } elseif ($timeIn->gt($standardTime) && $timeIn->lte($late1)) {
+                                        $statusDisplay = 'terlambat_1';
+                                    } elseif ($timeIn->gt($late1) && $timeIn->lte($late2)) {
+                                        $statusDisplay = 'terlambat_2';
+                                    } elseif ($timeIn->gt($late2) && $timeIn->lte($late3)) {
+                                        $statusDisplay = 'terlambat_3';
                                     } else {
-                                        // Calculate lateness level based on time
-                                        $timeIn = \Carbon\Carbon::parse($attendance->time_in);
-                                        $standardTime = \Carbon\Carbon::parse($company->time_in ?? '08:00')->setDate($timeIn->year, $timeIn->month, $timeIn->day)->addSeconds(59);
-                                        $late1 = \Carbon\Carbon::parse($company->late_threshold_1 ?? '08:30')->setDate($timeIn->year, $timeIn->month, $timeIn->day)->addSeconds(59);
-                                        $late2 = \Carbon\Carbon::parse($company->late_threshold_2 ?? '09:00')->setDate($timeIn->year, $timeIn->month, $timeIn->day)->addSeconds(59);
-                                        $late3 = \Carbon\Carbon::parse($company->late_threshold_3 ?? '12:00')->setDate($timeIn->year, $timeIn->month, $timeIn->day)->addSeconds(59);
-                                        
-                                        if ($timeIn->gt($standardTime) && $timeIn->lte($late1)) {
-                                            $statusDisplay = 'terlambat_1';
-                                        } elseif ($timeIn->gt($late1) && $timeIn->lte($late2)) {
-                                            $statusDisplay = 'terlambat_2';
-                                        } elseif ($timeIn->gt($late2) && $timeIn->lte($late3)) {
-                                            $statusDisplay = 'terlambat_3';
-                                        } elseif ($timeIn->gt($late3)) {
-                                            $statusDisplay = 'setengah_hari';
-                                        } else {
-                                            $statusDisplay = 'tepat_waktu';
-                                        }
+                                        $statusDisplay = 'setengah_hari';
                                     }
                                 @endphp
                                 

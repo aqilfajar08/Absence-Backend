@@ -150,6 +150,31 @@ class MonthlyAttendanceSheet implements FromCollection, WithTitle, WithHeadings,
                         $bgColor = '757171';
                         $izinCount++;
                     }
+                } elseif ($attendance && $attendance->status && in_array($attendance->status, ['sick', 'leave', 'alpha', 'out_of_town', 'permission'])) {
+                    // Check manual status from attendance table (e.g., edited via web admin)
+                    if ($attendance->status == 'sick') {
+                        $cellContent = 'Sakit';
+                        $bgColor = 'BFBFBF';
+                        $sakitCount++;
+                    } elseif ($attendance->status == 'leave') {
+                        $cellContent = 'CUTI';
+                        $bgColor = '00B050';
+                        $cutiCount++;
+                    } elseif ($attendance->status == 'out_of_town') {
+                        $cellContent = 'DLK';
+                        $bgColor = '757171';
+                        $gphCount += 1;
+                        $tjCount += 1;
+                        $hadirCount += 1;
+                    } elseif ($attendance->status == 'permission') {
+                        $cellContent = 'IZIN';
+                        $bgColor = '757171';
+                        $izinCount++;
+                    } elseif ($attendance->status == 'alpha') {
+                        $cellContent = 'ALPHA';
+                        $bgColor = '5B9BD5';
+                        $alpaCount++;
+                    }
                 } elseif ($attendance && $attendance->time_in) {
                     $timeIn = Carbon::parse($attendance->time_in)->setDate($this->year, $this->month, $i);
                     $cellContent = $timeIn->format('H:i'); // ALWAYS show time if exists
@@ -162,7 +187,7 @@ class MonthlyAttendanceSheet implements FromCollection, WithTitle, WithHeadings,
                         $hadirCount++;
                     } else {
                         // Regular weekday lateness logic
-                        $tTimeIn = Carbon::parse($this->company->time_in ?? '08:00:00')->setDate($this->year, $this->month, $i)->addSeconds(59);
+                        $tTimeIn = Carbon::parse($this->company->time_in ?? '08:00:00')->setDate($this->year, $this->month, $i);
                         $tLate1  = Carbon::parse($this->company->late_threshold_1 ?? '08:30:00')->setDate($this->year, $this->month, $i)->addSeconds(59);
                         $tLate2  = Carbon::parse($this->company->late_threshold_2 ?? '09:00:00')->setDate($this->year, $this->month, $i)->addSeconds(59);
                         $tLate3  = Carbon::parse($this->company->late_threshold_3 ?? '12:00:00')->setDate($this->year, $this->month, $i)->addSeconds(59);
@@ -232,12 +257,12 @@ class MonthlyAttendanceSheet implements FromCollection, WithTitle, WithHeadings,
                 }
             }
             
-            // Calculate GPH (Daily Salary)
-            $dailySalary = ($user->gaji_pokok > 0 && $this->daysInMonth > 0) ? ($user->gaji_pokok / $this->daysInMonth) : 0;
+            // GPH (Gaji Per Hari) - gaji_pokok is already daily salary
+            $dailySalary = $user->gaji_pokok ?? 0;
             
             // Summary columns
-            $row[] = number_format($dailySalary, 0, ',', '.'); // GPH (Displayed as Daily)
-            $row[] = number_format($user->tunjangan ?? 0, 0, ',', '.');
+            $row[] = $dailySalary; // GPH as numeric value (Excel will format)
+            $row[] = $user->tunjangan ?? 0; // TJ as numeric value (Excel will format)
             $row[] = $cutiCount;
             $row[] = $cutiCount;
             $row[] = $telatCount;
@@ -392,7 +417,7 @@ class MonthlyAttendanceSheet implements FromCollection, WithTitle, WithHeadings,
             } elseif ($i - 2 < count($userDeductionData)) {
                 $userData = $userDeductionData[$i - 2];
                 $dRow = [];
-                $fmt = fn($val) => $val > 0 ? number_format($val, 0, ',', '.') : '-';
+                $fmt = fn($val) => $val > 0 ? $val : '-';
                 
                 // Helper to push double
                 $push = function($val) use (&$dRow) {
@@ -508,6 +533,20 @@ class MonthlyAttendanceSheet implements FromCollection, WithTitle, WithHeadings,
         
         $this->styleDeductionTable($sheet);
         
+        // Format GPH and TJ columns with thousand separator
+        $gphCol = $this->getColumnLetter(3 + $this->daysInMonth); // GPH column
+        $tjCol = $this->getColumnLetter(3 + $this->daysInMonth + 1); // TJ column
+        $dataStartRow = 5;
+        $dataEndRow = 4 + count($this->users);
+        
+        // Apply number format: #,##0 (thousand separator with no decimals)
+        $sheet->getStyle("{$gphCol}{$dataStartRow}:{$gphCol}{$dataEndRow}")
+            ->getNumberFormat()
+            ->setFormatCode('#,##0');
+        $sheet->getStyle("{$tjCol}{$dataStartRow}:{$tjCol}{$dataEndRow}")
+            ->getNumberFormat()
+            ->setFormatCode('#,##0');
+        
         return [];
     }
     
@@ -597,6 +636,11 @@ class MonthlyAttendanceSheet implements FromCollection, WithTitle, WithHeadings,
             $sheet->getStyle("I{$dataStart}:AD{$dEndRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
             // Center 'No'
             $sheet->getStyle("E{$dataStart}:F{$dEndRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            
+            // Apply number format with thousand separator to all numeric deduction columns
+            $sheet->getStyle("I{$dataStart}:AD{$dEndRow}")
+                ->getNumberFormat()
+                ->setFormatCode('#,##0');
         }
     }
 
