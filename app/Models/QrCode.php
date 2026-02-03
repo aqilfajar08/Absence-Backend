@@ -20,7 +20,7 @@ class QrCode extends Model
     ];
 
     protected $casts = [
-        'valid_date' => 'date',
+        'valid_date' => 'datetime',
         'expires_at' => 'datetime',
         'is_active' => 'boolean',
     ];
@@ -40,7 +40,7 @@ class QrCode extends Model
     {
         return $this->is_active 
             && $this->valid_date->isToday() 
-            && Carbon::now()->hour >= 6 // Valid from 06:00
+            && Carbon::now()->hour >= 5 // Valid from 05:00 WITA
             && Carbon::now()->lessThan($this->expires_at);
     }
 

@@ -192,11 +192,24 @@
     document.addEventListener('DOMContentLoaded', function() {
         const qrContainer = document.getElementById('qrcode');
         const loading = document.getElementById('loading');
-        const token = "{{ $qrToken }}";
+        
+        let qrCodeInstance = null;
 
-        // Generate QR Code
-        setTimeout(() => {
-            new QRCode(qrContainer, {
+        // Function to generate/regenerate QR code with current date
+        function generateQRCode() {
+            // Get current date in YYYY-MM-DD format (WITA timezone)
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const currentDate = `${year}-${month}-${day}`;
+            const token = `KASAU-ABSENSI-${currentDate}`;
+
+            // Clear previous QR code
+            qrContainer.innerHTML = '';
+            
+            // Generate new QR code
+            qrCodeInstance = new QRCode(qrContainer, {
                 text: token,
                 width: 200,
                 height: 200,
@@ -204,8 +217,39 @@
                 colorLight : "#ffffff",
                 correctLevel : QRCode.CorrectLevel.H
             });
+            
             loading.style.display = 'none';
-        }, 500); // Small delay for visual effect
+            console.log('QR Code generated with token:', token);
+        }
+
+        // Function to check if it's midnight (00:00)
+        function checkMidnight() {
+            const now = new Date();
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            
+            // If it's 00:00, regenerate QR code
+            if (hours === 0 && minutes === 0) {
+                console.log('Midnight detected! Regenerating QR code...');
+                generateQRCode();
+            }
+        }
+
+        // Initial QR code generation
+        setTimeout(() => {
+            generateQRCode();
+        }, 500);
+
+        // Reload page setiap 1 menit untuk update daftar absensi
+        setInterval(() => {
+            console.log('Auto-reloading page for fresh attendance data...');
+            window.location.reload();
+        }, 60000); // 1 menit
+
+        // Check for midnight every minute to regenerate QR
+        setInterval(() => {
+            checkMidnight();
+        }, 60000); // Check every minute
     });
 </script>
 @endpush

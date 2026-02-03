@@ -447,7 +447,7 @@
                 </div>
                 <span class="text-xs text-gray-400 font-medium uppercase tracking-wider mb-1">Jam Masuk</span>
                 <span class="text-xl font-bold text-gray-900">
-                    {{ substr($company->time_in ?? '08:00', 0, 5) }}
+                    08:00
                 </span>
                 <span class="text-[10px] text-gray-400 mt-1">WITA</span>
             </div>
